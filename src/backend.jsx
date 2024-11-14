@@ -5,7 +5,7 @@ const app = express();
 const port = 5000;
 
 //intialize the openai api
- const openai = new OpenAI({ apiKey: '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' });
+ const openai = new OpenAI({ apiKey: 'api-key' });
 
 app.post('/generate-text', async (req, res) => {
     const{journalEntry} = req.body;
