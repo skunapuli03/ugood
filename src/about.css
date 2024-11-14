@@ -1,0 +1,83 @@
+/* about.css */
+.about-container {
+  max-width: 800px;
+  margin: 80px auto 40px; /* Added top margin to prevent navbar overlap */
+  padding: 20px;
+  color: #333;
+}
+
+.mission-header {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #58caff; /* Matches your journal entry blue */
+}
+
+.mission-desc {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 40px;
+  line-height: 1.6;
+  font-weight: normal;
+}
+
+.story-header {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 40px 0 20px;
+  color: #58caff;
+}
+
+.story-desc {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  font-weight: normal;
+}
+
+.story-desc p {
+  margin-bottom: 20px;
+}
+
+.story-desc strong {
+  color: #58caff;
+}
+
+.try-ugood {
+  display: block;
+  margin: 40px auto;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  background-color: #ffec3d; /* Matches your journal entry yellow */
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.try-ugood:hover {
+  background-color: #f8c300;
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .about-container {
+    padding: 15px;
+    margin-top: 60px;
+  }
+
+  .mission-header,
+  .story-header {
+    font-size: 2rem;
+  }
+
+  .mission-desc {
+    font-size: 1.25rem;
+  }
+
+  .story-desc {
+    font-size: 1rem;
+  }
+}

@@ -1,0 +1,70 @@
+/* Reset default margin, padding, and box-sizing */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow-x: hidden; /* Prevents horizontal scrollbars */
+}
+
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px; /* Adjust padding for your desired spacing */
+    background: white;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.logo {
+    font-weight: bold;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+}
+
+.links {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+}
+
+.links a {
+    text-decoration: none;
+    color: black;
+    font-size: 16px;
+}
+
+.buttons {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+button {
+    padding: 8px 16px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.primary {
+    background: #58caff;
+    border-radius: 4px;
+    transition: background-color 0.3s ease-in-out;
+}
+.primary:hover{
+    background-color: #b7e6ff;
+}
+

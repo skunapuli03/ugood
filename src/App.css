@@ -1,0 +1,24 @@
+/*styling for front-end of journal entry*/
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.header{
+  margin-bottom: 20px;
+}
+.try-ugood{
+  background-color: #58caff;
+  margin-top: 30px;
+  padding: 12px 24px;
+  border-radius: 4px;
+  text-align: left;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.try-ugood:hover {
+  background-color: #b7e6ff;
+}
+

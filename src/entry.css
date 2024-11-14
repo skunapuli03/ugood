@@ -1,0 +1,168 @@
+/* Your existing styles remain the same */
+.journal-entry-container {
+  background-color: #58caff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  width: 80vw;
+  height: 70vw;
+  max-width: 800px;
+  max-height: 700px;
+  margin: 140px auto 50px; /* Changed from margin: 50px auto - increased top margin to 120px */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.journal-title {
+  color: #fff;
+  margin-bottom: 20px;
+  text-align: center;
+  font-size: 2em;
+}
+
+.journal-input {
+  width: 100%;
+  height: 75%;
+  border: 1px solid #fff;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 18px;
+  line-height: 1.5;
+  resize: none;
+  transition: border-color 0.3s;
+}
+
+.journal-input:focus {
+  border-color: #ffec3d;
+  outline: none;
+}
+
+.submit-msg {
+  background-color: #ffec3d;
+  color: #333;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  font-size: 1.2em;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.submit-msg:hover {
+  background-color: #f8c300;
+}
+
+/* New Modal Styles to match your theme */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  width: 90%;
+  max-width: 400px;
+}
+
+/* Reflection Modal specific styles */
+.reflection-modal {
+  background: white;
+  max-width: 800px;
+  width: 80vw;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  border-radius: 12px;
+}
+
+.reflection-header {
+  background-color: #58caff;
+  padding: 20px;
+  border-radius: 12px 12px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.reflection-header h3 {
+  margin: 0;
+  color: white;
+  font-size: 1.5em;
+}
+
+.reflection-body {
+  padding: 25px;
+  overflow-y: auto;
+  line-height: 1.6;
+  font-size: 16px;
+  color: #333;
+  max-height: calc(80vh - 80px); /* Account for header height */
+}
+
+.close-button {
+  background: #ffec3d;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.close-button:hover {
+  background-color: #f8c300;
+}
+
+/* Loading spinner styles */
+.loading-spinner-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.loading-spinner {
+  border: 3px solid #fff;
+  border-top: 3px solid #ffec3d;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin-bottom: 10px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.loading-spinner-container p {
+  color: white;
+  font-size: 1.1em;
+}
+
+/* Disabled state for submit button */
+.submit-msg:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
