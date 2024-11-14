@@ -2,6 +2,7 @@ import React from 'react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'; 
+import { Analytics } from "@vercel/analytics/react";
 import './index.css';
 import App from './App.jsx';
 import Layout from './layout.jsx'; // Import the layout
