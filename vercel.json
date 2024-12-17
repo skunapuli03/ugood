@@ -2,14 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.js",
+      "src": "api/generate-reflections.js",
       "use": "@vercel/node"
+    },
+    {
+      "src": "dist/**/*",
+      "use": "@vercel/static"
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "api/generate-reflections.js"
+    },
+    {
       "src": "/(.*)",
-      "dest": "index.js"
+      "dest": "/dist/$1"
     }
   ]
 }

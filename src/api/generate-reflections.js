@@ -1,5 +1,8 @@
 // pages/api/generate-reflection.js
 
+console.log("Starting generate-reflections.js"); //this is to let us know that server is working
+
+
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import dotenv from 'dotenv';
 
