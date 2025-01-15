@@ -44,7 +44,7 @@ function Entry() {
     setShowReflectionModal(false);
 
     try {
-      const response = await fetch('http://server/generate-reflection', {
+      const response = await fetch('http://localhost:9999/generate-reflections', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

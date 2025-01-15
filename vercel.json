@@ -8,7 +8,10 @@
     {
       "src": "dist/**/*",
       "use": "@vercel/static"
-    }
+    },
+    { "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
+
+    
   ],
   "routes": [
     {
