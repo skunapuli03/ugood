@@ -1,112 +1,115 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import './entry.css';
-import LessonModal from './lesson_modal';
-
-// Modal component for alerts and reflections
-const Modal = ({ message, onClose, isReflection = false }) => (
-  <div className="modal-overlay">
-    <div className={`modal-content ${isReflection ? 'reflection-modal' : ''}`}>
-      {isReflection ? (
-        <>
-          <div className="reflection-header">
-            <h3>✨ Your Reflection</h3>
-            <button className="close-button" onClick={onClose}>×</button>
-          </div>
-          <div className="reflection-body">
-            {message}
-          </div>
-        </>
-      ) : (
-        <>
-          <p>{message}</p>
-          <button onClick={onClose}>Close</button>
-        </>
-      )}
-    </div>
-  </div>
-);
+import ReflectionCard from './ReflectionCard';
 
 function Entry() {
   const [journalText, setJournalText] = useState('');
   const [loading, setLoading] = useState(false);
   const [reflection, setReflection] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [showReflectionModal, setShowReflectionModal] = useState(false);
+  const [showReflection, setShowReflection] = useState(false);
 
   const handleSubmit = async () => {
     if (!journalText.trim()) {
-      setShowModal(true);
+      alert('Please write something before submitting!');
+      return;
+    }
+
+    // If reflection already exists, just show it
+    if (reflection) {
+      setShowReflection(true);
       return;
     }
 
     setLoading(true);
-    setReflection('');
-    setShowReflectionModal(false);
-
     try {
+      // Generate reflection from Gemini
       const response = await fetch('http://localhost:9999/generate-reflections', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ journalEntry: journalText }),
       });
-
       const data = await response.json();
       setReflection(data.reflection);
-      setShowReflectionModal(true); // Show reflection in modal when received
+
+      // Save the generated lesson to your backend so you can retrieve it later
+      await fetch('http://localhost:9999/api/save-lesson', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ journalEntry: journalText, reflection: data.reflection })
+      });
+
+      setShowReflection(true);
     } catch (error) {
-      console.error('Error generating reflection:', error);
-      setShowModal(true);
+      console.error('Error generating reflection or tasks with Gemini:', error);
+      alert('Failed to generate reflection!');
     } finally {
       setLoading(false);
     }
   };
 
-  const closeModal = () => setShowModal(false);
-  const closeReflectionModal = () => setShowReflectionModal(false);
+  // Retrieves the saved lesson from your backend
+  const handleViewLesson = async () => {
+    try {
+      const res = await fetch('http://localhost:9999/api/get-lesson', {
+        method: 'GET'
+      });
+      const data = await res.json();
+      if (data && data.reflection) {
+        setReflection(data.reflection);
+        setShowReflection(true);
+      }
+    } catch (error) {
+      console.error('Error retrieving lesson:', error);
+      alert('Failed to retrieve lesson!');
+    }
+  };
+
+  // Toggle back to journal entry view
+  const handleShowJournal = () => {
+    setShowReflection(false);
+  };
 
   return (
-    <>
-      <div className="journal-entry-container">
-        <h2 className="journal-title">📝 Journal Entry</h2>
-        <textarea
-          className="journal-input"
-          placeholder="Your thoughts, feelings, or observations"
-          value={journalText}
-          onChange={(e) => setJournalText(e.target.value)}
-        />
-        <button 
-          className="submit-msg" 
-          onClick={handleSubmit}
-          disabled={loading}
+    <div className="entry-container">
+      {!showReflection && (
+        <motion.div
+          initial={{ opacity: 1 }}
+          animate={{ opacity: 1 }}
+          className="journal-entry-container"
         >
-          {loading ? 'Generating...' : 'Submit 😊'}
-        </button>
-
-        {loading && (
-          <div className="loading-spinner-container">
-            <div className="loading-spinner"></div>
-            <p>Generating your reflection...</p>
-          </div>
-        )}
-      </div>
-
-      {showModal && (
-        <Modal 
-          message="Please write something before submitting!" 
-          onClose={closeModal} 
-        />
+          <h2 className="journal-title">📝 Journal Entry</h2>
+          <textarea
+            className="journal-input"
+            placeholder="Your thoughts, feelings, or observations"
+            value={journalText}
+            onChange={(e) => {
+              setJournalText(e.target.value);
+              // Clear the reflection if the journal text is modified
+              if (reflection) setReflection('');
+            }}
+          />
+          <button className="submit-msg" onClick={handleSubmit} disabled={loading}>
+            {loading ? 'Generating...' : 'Reflect 😊'}
+          </button>
+        </motion.div>
       )}
 
-      {showReflectionModal && reflection && (
-        <Modal
-          message={reflection}
-          onClose={closeReflectionModal}
-          isReflection={true}
-        />
+      {showReflection && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="reflection-container"
+        >
+          <ReflectionCard reflection={reflection} />
+          <button className="submit-msg" onClick={handleShowJournal}>
+            View Journal Entry
+          </button>
+          
+
+        </motion.div>
       )}
-    </>
+    </div>
   );
 }
 

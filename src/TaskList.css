@@ -1,0 +1,26 @@
+.task-list-container {
+    background: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin: 20px 0;
+  }
+  
+  .add-task {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .task-list-container ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .task-list-container li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px;
+    border-bottom: 1px solid #eee;
+  }

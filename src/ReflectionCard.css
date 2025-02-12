@@ -1,0 +1,20 @@
+.reflection-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  margin: 20px 0;
+  text-align: center;
+}
+
+.reflection-card h3 {
+  color: #007aff;
+  margin-bottom: 10px;
+  font-size: 1.5em;
+}
+
+.reflection-card p {
+  color: #333;
+  font-size: 1.1em;
+  line-height: 1.6;
+}

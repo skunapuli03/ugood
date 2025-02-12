@@ -24,6 +24,9 @@ html, body {
     left: 0;
     width: 100%;
     z-index: 1000;
+    height: 60px; /* Adjust this value based on your navbar height */
+    background-color: #fff; /* Adjust the background color as needed */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
@@ -49,6 +52,7 @@ html, body {
     display: flex;
     gap: 16px;
     align-items: center;
+    height: 100%; /* Ensure buttons are vertically centered */
 }
 
 button {
@@ -64,7 +68,7 @@ button {
     border-radius: 4px;
     transition: background-color 0.3s ease-in-out;
 }
-.primary:hover{
+
+.primary:hover {
     background-color: #b7e6ff;
 }
-
