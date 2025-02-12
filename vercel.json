@@ -1,17 +1,15 @@
 {
   "version": 2,
   "builds": [
+    { "src": "package.json", "use": "@vercel/node" },
+    { "src": "public/**/*", "use": "@vercel/static" },
     {
-      "src": "api/generate-reflections.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "dist/**/*",
-      "use": "@vercel/static"
-    },
-    { "rewrites": [{ "source": "/(.*)", "destination": "/" }] }
-
-    
+      "src": "src/some-folder/**",
+      "use": "@vercel/other",
+      "rewrites": [
+        { "source": "/api/(.*)", "destination": "/api/index.js" }
+      ]
+    }
   ],
   "routes": [
     {
