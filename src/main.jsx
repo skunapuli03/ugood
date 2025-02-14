@@ -10,7 +10,7 @@ import Entry from './entry.jsx';
 import Features from './features.jsx'
 import About from './about.jsx';
 import Resources from './resources.jsx';
-
+import AuthPage from './auth.jsx';
 
 
 const router = createBrowserRouter([
@@ -33,6 +33,10 @@ const router = createBrowserRouter([
   {
     path: "/resources",
     element: <Layout> <Resources/></Layout>,
+  },
+  {
+    path: "/auth",
+    element: <Layout> <AuthPage /></Layout>,
   },
 ]);
 

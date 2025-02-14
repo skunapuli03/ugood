@@ -15,9 +15,7 @@ const Navbar = () => {
             </div>
             <div className = 'buttons'>
                 
-                {/*<button>Sign Up</button> will only link this up properly once users r on 
-                and auth is setup, try firebase first before jwt*/}
-                <Link to ="/entry">
+                <Link to ="/auth">
                     <button className = 'primary'>Get Started 📖</button>
                 </Link> 
             </div>

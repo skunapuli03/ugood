@@ -48,7 +48,7 @@ function Entry() {
     }
   };
 
-  // Retrieves the saved lesson from your backend
+  // Retrieves the saved lesson from the endpoint, nothing stored in backend purely in-memory, not good for production quality code
   const handleViewLesson = async () => {
     try {
       const res = await fetch('http://localhost:9999/api/get-lesson', {
