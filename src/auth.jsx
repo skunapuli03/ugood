@@ -5,8 +5,8 @@ import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 
 
-const supabaseKey = process.env.SUPABASE_KEY
-const supabaseurl = process.env.SUPABASE_URL
+const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
+const supabaseurl = import.meta.env.VITE_SUPABASE_URL
 const supabase = createClient( supabaseurl, supabaseKey)
 //include option for user to enter his/her name
 function AuthPage(){
