@@ -3,11 +3,12 @@ import {Link} from "react-router-dom";
 import { createClient } from '@supabase/supabase-js'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
+import Entry from "./entry";
 
 
-const supabaseKey = import.meta.env.VITE_SUPABASE_KEY
-const supabaseurl = import.meta.env.VITE_SUPABASE_URL
-const supabase = createClient( supabaseurl, supabaseKey)
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8'
+const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co"
+const supabase = createClient(supabaseUrl, supabaseKey)
 //include option for user to enter his/her name
 function AuthPage(){
     const [session, setSession] = useState(null)
@@ -35,7 +36,8 @@ function AuthPage(){
     }
     else {//this else condition renders when the user is logged in 
     
-      return (<div>Logged in!</div>) //import the full journal features/components into here
+      return (<Entry/>) //import the full journal features/components into here + adjust the css to the webpage
+      
       /*the full journal components:
         user name at the top so a greeting like "happy to see you again {user name}"
         journal textarea to the right of the screen
