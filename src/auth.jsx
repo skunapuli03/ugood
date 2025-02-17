@@ -30,14 +30,14 @@ function AuthPage(){
     if (!session) { // this right here renders the page if not logged in
       return (
       <div className="auth-container">
-        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }} providers={["google"]} />
+        <Auth supabaseClient={supabase} appearance={{ theme: ThemeSupa }}  />
       </div>
       )
     }
     else {//this else condition renders when the user is logged in 
     
       return (<Entry/>) //import the full journal features/components into here + adjust the css to the webpage
-      
+
       /*the full journal components:
         user name at the top so a greeting like "happy to see you again {user name}"
         journal textarea to the right of the screen
