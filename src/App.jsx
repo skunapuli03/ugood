@@ -14,41 +14,96 @@ const supabase = createClient(
 
 function App() {
   const [session, setSession] = useState(null);
+  const [journals, setJournals] = useState([]);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session:', session); // Debug log
       setSession(session);
     });
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log('Auth state changed:', session); // Debug log
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (session) {
+      fetchJournals();
+    }
+  }, [session]);
+
+  const fetchJournals = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('journals')
+        .select('*')
+        .eq('user_id', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setJournals(data || []);
+    } catch (error) {
+      console.error('Error fetching journals:', error);
+    }
+  };
+
   return (
-    //everything here becomes a condition statement
-    //if logged in then show the journals w the lessons, and what if button, and generate new lesson buttons
-    // include a small text area to the right of the screen to write a journal entry
     <>
       <Navbar session={session} />
       <div className="app-content">
-        <h1 className="header">
-          Oh hey you 👋🏾. Welcome to UGood, your personal journal. It helps you learn, grow, and meet people who overcame challenges like you😁
-        </h1>
-        
-        <Link to="/entry">
-          <button className='try-ugood'>
-            Try UGood Free
-          </button>
-        </Link> 
+        {session ? (
+          // Show dashboard for logged in users
+          <div className="dashboard-layout">
+            {/* Left Sidebar */}
+            <aside className="journals-sidebar">
+              <h2>Your Journal History</h2>
+              <div className="journals-list">
+                {journals?.map(journal => (
+                  <motion.div 
+                    key={journal.id}
+                    className="journal-card"
+                  >
+                    <p className="journal-preview">
+                      {journal.content.substring(0, 100)}...
+                    </p>
+                    {journal.reflection && (
+                      <div className="lesson-preview">
+                        <p>{journal.reflection}</p>
+                        <button 
+                          onClick={() => handleWhatIf(journal.id)}
+                          className="what-if-btn"
+                        >
+                          What If? 🤔
+                        </button>
+                      </div>
+                    )}
+                  </motion.div>
+                ))}
+              </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="main-content">
+              <Link to="/entry" className="new-entry-btn">
+                Write New Entry ✍️
+              </Link>
+            </main>
+          </div>
+        ) : (
+          // Show landing page for non-logged in users
+          <>
+            <h1 className="header">
+              Oh hey you 👋🏾. Welcome to UGood, your personal journal.
+            </h1>
+            <Link to="/entry">
+              <button className='try-ugood'>
+                Try UGood Free
+              </button>
+            </Link>
+          </>
+        )}
       </div>
       <Analytics/>
     </>
