@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import './entry.css';
 import ReflectionCard from './ReflectionCard';
 import { createClient } from '@supabase/supabase-js';
-
+import ChatInterface from './ChatInterface';
 
 
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8'
