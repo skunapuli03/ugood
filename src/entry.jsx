@@ -134,7 +134,7 @@ function Entry({ session }) { // Fix: Destructure session prop
       const data = await response.json();
       setChatHistory([{
         type: 'ai',
-        content: "Based on your journal, let's explore what could have been different.",
+        content: "Based on your journal, let's explore what could have been different. Ask if there is something that could've been changed with a simple decision.",
         timestamp: new Date().toISOString()
       }]);
 
@@ -202,16 +202,13 @@ function Entry({ session }) { // Fix: Destructure session prop
               />
               <button 
                 className="submit-msg" 
-                onClick={handleSubmit}
+                onClick={reflection ? () => setShowReflectionModal(true) : handleSubmit}
                 disabled={loading}
               >
-                {loading ? 'Generating...' : 'Reflect 😊'}
+                {loading ? 'Generating...' : 'Reflect 😊'?'View Lesson':'Reflect 😊'}
               </button>
 
-              {loading && (
-                <div className="loading-spinner-container">
-                </div>
-              )}
+           
             </motion.div>
 
             <motion.div
