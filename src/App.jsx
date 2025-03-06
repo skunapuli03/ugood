@@ -66,12 +66,12 @@ function App() {
                     key={journal.id}
                     className="journal-card"
                   >
-                    <p className="journal-preview">
-                      {journal.content.substring(0, 100)}...
+                    <p className="journal-preview"> <button> Journal Entry </button>
+                      {journal.content.substring(0, 10)}...
                     </p>
                     {journal.reflection && (
                       <div className="lesson-preview">
-                        <p>{journal.reflection}</p>
+                        <p><button onClick={() => fetchJournals()}> Journal Lesson </button>{journal.reflection.substring(0,10)}</p>
                         <button 
                           onClick={() => handleWhatIf(journal.id)}
                           className="what-if-btn"

@@ -159,11 +159,11 @@ function Entry({ session }) { // Fix: Destructure session prop
               className="journal-card"
             >
               <p className="journal-preview">
-                {journal.content.substring(0, 100)}...
+                {journal.content.substring(0, 10)}...
               </p>
               {journal.reflection && (
                 <div className="lesson-preview">
-                  <p>{journal.reflection}</p>
+                  <p>{journal.reflection.substring(0,10)}</p>
                   <button 
                     onClick={() => handleWhatIf(journal.id)}
                     className="what-if-btn"
@@ -210,8 +210,6 @@ function Entry({ session }) { // Fix: Destructure session prop
 
               {loading && (
                 <div className="loading-spinner-container">
-                  <div className="loading-spinner"></div>
-                  <p>Generating your reflection...</p>
                 </div>
               )}
             </motion.div>

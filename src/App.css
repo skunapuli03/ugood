@@ -1,4 +1,4 @@
-/*styling for front-end of journal entry*/
+/* styling for front-end of journal entry */
 #root {
   max-width: 1280px;
   margin: 0 auto;
@@ -6,10 +6,11 @@
   text-align: center;
 }
 
-.header{
+.header {
   margin-bottom: 20px;
 }
-.try-ugood{
+
+.try-ugood {
   background-color: #58caff;
   margin-top: 30px;
   padding: 12px 24px;
@@ -22,24 +23,34 @@
   background-color: #b7e6ff;
 }
 
-/* Add these styles */
+/* Dashboard Layout
+   We switch from grid to block layout so we can fix the sidebar.
+   The overall container accounts for the fixed navbar (64px tall). */
 .dashboard-layout {
-  display: grid;
-  grid-template-columns: 300px 1fr;  /* Adjust sidebar width as needed */
-  gap: 2rem;
+  display: block;
+  margin-top: 64px; /* Offset for fixed navbar */
+  height: calc(100vh - 64px);
   padding: 2rem;
-  height: calc(100vh - 64px);  /* Assumes 64px navbar height */
-  margin-top: 64px;
 }
 
+/* Journals Sidebar
+   Fixed to the left with a 20px gap from the screen edge.
+   Positioned just below the navbar (top: 64px). */
 .journals-sidebar {
+  position: fixed;
+  left: 20px;                 /* 20px gap from the left edge */
+  top: 64px;                  /* Positioned below the navbar */
+  width: 300px;
+  height: calc(100vh - 64px);   /* Full height minus navbar */
   background: white;
-  border-radius: 12px;
+  border-radius: 0 12px 12px 0; /* Rounded right side */
   padding: 1.5rem;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
+  z-index: 10;
 }
 
+/* Journal Card Styling */
 .journal-card {
   background: #f8f9fa;
   border-radius: 8px;
@@ -53,8 +64,8 @@
   transform: translateY(-2px);
 }
 
+/* New Entry Button Styling */
 .new-entry-btn {
-  /* Style your "Write New Entry" button */
   display: inline-block;
   padding: 1rem 2rem;
   background: #007aff;
@@ -69,3 +80,11 @@
   background: #0056b3;
 }
 
+/* Main Content Area
+   Added left margin to ensure it doesn't overlap the fixed sidebar.
+   The margin-left is calculated as 300px (sidebar width) + 20px (gap) + extra 20px for spacing. */
+.main-content {
+  margin-left: 340px;
+  padding: 2rem;
+  height: calc(100vh - 64px);
+}
