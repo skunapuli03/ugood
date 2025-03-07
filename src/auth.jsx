@@ -50,7 +50,7 @@ function AuthPage() {
         <Auth 
           supabaseClient={supabase} 
           appearance={{ theme: ThemeSupa }} 
-          providers={["google"]}
+          providers={[]}
         />
       </div>
     );
