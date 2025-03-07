@@ -49,6 +49,7 @@ function Entry({ session }) { // Fix: Destructure session prop
 
   const closeModal = () => setShowModal(false);
   const closeReflectionModal = () => setShowReflectionModal(false);
+
   //fetching journals if the user is logged in
   useEffect(() => {
     if (session){
@@ -56,7 +57,7 @@ function Entry({ session }) { // Fix: Destructure session prop
     }
   }, [session]);
 
-  const fetchJournals = async () => {
+  const fetchJournals = async () => { 
     try {
       const { data, error } = await supabase
         .from('journals')
@@ -94,17 +95,12 @@ function Entry({ session }) { // Fix: Destructure session prop
       const data = await response.json();
       setReflection(data.reflection);
 
-      if (session) {
-        await supabase.from('journals').insert([{
-          user_id: session.user.id,
-          content: journalText,
-          reflection: data.reflection,
-          created_at: new Date().toISOString()
-        }]);
-        fetchJournals(); // Refresh journals after adding new one
-      } else {
-        setShowSignUpPrompt(true);
-      }
+      if (!error && session && newJournal && newJournal.length){
+          setJournals(prevJournals => [journals[0], ... prevJournals]);
+        }
+      else{
+          setShowSignUpPrompt(true);
+        }
     } catch (error) {
       console.error('Error:', error);
       setShowModal(true);
@@ -157,6 +153,7 @@ function Entry({ session }) { // Fix: Destructure session prop
             <motion.div 
               key={journal.id}
               className="journal-card"
+              onClick={ () => setSelectedJournal(journal)}
             >
               <p className="journal-preview">
                 {journal.content.substring(0, 10)}...
@@ -165,7 +162,7 @@ function Entry({ session }) { // Fix: Destructure session prop
                 <div className="lesson-preview">
                   <p>{journal.reflection.substring(0,10)}</p>
                   <button 
-                    onClick={() => handleWhatIf(journal.id)}
+                    onClick={(e) => {e.stopPropagation(); handleWhatIf(journal.id)}}
                     className="what-if-btn"
                   >
                     What If? 🤔

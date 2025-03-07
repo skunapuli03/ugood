@@ -70,7 +70,7 @@ function App() {
                     </p>
                     {journal.reflection && (
                       <div className="lesson-preview">
-                        <p><button onClick={() => fetchJournals()}> Journal Lesson </button>{journal.reflection.substring(0,10)}</p>
+                        <p><button > Journal Lesson </button>{journal.reflection.substring(0,10)}</p>
                         <button 
                           onClick={() => handleWhatIf(journal.id)}
                           className="what-if-btn"
@@ -86,7 +86,7 @@ function App() {
 
             {/* Main Content */}
             <main className="main-content">
-              <Link to="/entry" className="new-entry-btn">
+              <Link to="/auth" className="new-entry-btn">
                 Write New Entry ✍️
               </Link>
             </main>
@@ -97,7 +97,7 @@ function App() {
             <h1 className="header">
               Oh hey you 👋🏾. Welcome to UGood, your personal journal.
             </h1>
-            <Link to="/entry">
+            <Link to="/entry" state = {journals}>
               <button className='try-ugood'>
                 Try UGood Free
               </button>

@@ -182,7 +182,7 @@
 
 .dashboard-layout {
   display: block;
-  margin-top: 64px; /* Offset for fixed navbar */
+  margin-top: 14px; /* Offset for fixed navbar */
   height: calc(100vh - 64px);
   padding: 2rem;
 }
@@ -192,12 +192,13 @@
    Positioned just below the navbar (top: 64px). */
 .journals-sidebar {
   position: fixed;
-  left: 20px;                 /* 20px gap from the left edge */
-  top: 64px;                  /* Positioned below the navbar */
+  left: 30px;                 /* 20px gap from the left edge */
+  top: 84px;                  /* Positioned below the navbar */
+  bottom: 30px;               /* Added bottom padding */
   width: 300px;
   height: calc(100vh - 64px);   /* Full height minus navbar */
   background: white;
-  border-radius: 0 12px 12px 0; /* Rounded right side */
+  border-radius: 10px 12px 12px 10px; /* Rounded right side */
   padding: 1.5rem;
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
   overflow-y: auto;
@@ -219,7 +220,7 @@
 }
 
 /* New Entry Button Styling */
-.new-entry-btn {
+.submit-msg {
   display: inline-block;
   padding: 1rem 2rem;
   background: #007aff;
@@ -230,7 +231,7 @@
   transition: background-color 0.2s ease;
 }
 
-.new-entry-btn:hover {
+.submit-msg:hover {
   background: #0056b3;
 }
 
