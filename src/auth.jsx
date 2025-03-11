@@ -48,10 +48,21 @@ function AuthPage() {
     return (
       <div className="auth-container">
         <Auth 
-          supabaseClient={supabase} 
-          appearance={{ theme: ThemeSupa }} 
-          providers={[]}
-        />
+  supabaseClient={supabase} 
+  appearance={{
+    theme: ThemeSupa,
+    variables: {
+      default: {
+        colors: {
+          brand: '#2563EB',        // Blue
+          brandAccent: '#1D4ED8', // Darker blue on hover
+        },
+      },
+    },
+  }} 
+  providers={[]}
+/>
+
       </div>
     );
   } else {

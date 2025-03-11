@@ -7,7 +7,7 @@ import { createClient } from '@supabase/supabase-js'
 import { Auth } from '@supabase/auth-ui-react'
 import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { motion } from "framer-motion";
-
+//REFER TO AUTH.JSX TO MAKE SURE YOU GET JOURNAL HISTORY, SO WHEN USER IS LOGGED IN THEY CAN GET THEIR CONTENT
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8'
 const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co"
 const supabase = createClient(supabaseUrl, supabaseKey)
@@ -94,16 +94,52 @@ function App() {
         ) : (
           // Show landing page for non-logged in users
           <>
+          <div className="landing-content">
             <h1 className="header">
-              Oh hey you 👋🏾. Welcome to UGood, your personal journal.
+              Reflect, Connect, Grow
             </h1>
-            <Link to="/entry" state = {journals}>
-              <button className='try-ugood'>
-                Try UGood Free
+            <h2 className="header">
+              Learn from your past self and gain insighs <br />
+              into you personal growth journey.
+              
+            </h2>
+            <Link to="/auth" state = {journals}>
+              <button className="landing-try-ugood" >
+                Start Journaling Now ➡️
               </button>
             </Link>
-          </>
-        )}
+
+      <div className="ugood-how-it-works">
+        <h3>How It Works</h3>
+        <div className="how-it-works-grid">
+
+          {/* 1st column */}
+          <div className="how-it-works-card">
+            {/* Replace with an icon, or a real image if you have one */}
+            <div className="icon-placeholder">📔</div> 
+            <h4>Daily Journaling</h4>
+            <p>Record your thoughts, feelings, and experiences.</p>
+          </div>
+
+          {/* 2nd column */}
+          <div className="how-it-works-card">
+            <div className="icon-placeholder">💬</div>
+            <h4>Reflective Conversations</h4>
+            <p>Chat with AI-generated versions of your past self.</p>
+          </div>
+
+          {/* 3rd column */}
+          <div className="how-it-works-card">
+            <div className="icon-placeholder">📈</div>
+            <h4>Growth Insights</h4>
+            <p>Visualize patterns and track your personal development.</p>
+          </div>
+
+        </div>
+      </div>
+      </div>
+            </>
+          )}
       </div>
       <Analytics/>
     </>

@@ -41,7 +41,7 @@ const Navbar = ({ session }) => {
                     </div>
                 ) : (
                     <Link to="/auth">
-                        <button className='primary'>Get Started 📖</button>
+                        <button className='primary'>Sign Up/Login 📖</button>
                     </Link>
                 )}
             </div>

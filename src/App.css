@@ -1,27 +1,33 @@
 /* styling for front-end of journal entry */
-#root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+
+.landing-content{
+  padding: 0;
+  font-family: 'Inter', sans-serif; /* Now your entire site uses Inter */
+  color: #333;
+  margin-left: 30px;
 }
 
-.header {
-  margin-bottom: 20px;
-}
 
-.try-ugood {
-  background-color: #58caff;
-  margin-top: 30px;
+
+
+.landing-try-ugood {
+  background-color: #007aff; /* A blue button color, for example */
+  margin-top: 20px;
   padding: 12px 24px;
   border-radius: 4px;
-  text-align: left;
+  color: #fff;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
   transition: background-color 0.3s ease-in-out;
 }
 
-.try-ugood:hover {
-  background-color: #b7e6ff;
+.landing-try-ugood:hover {
+  background-color: #0056b3;
 }
+
 
 /* Dashboard Layout
    We switch from grid to block layout so we can fix the sidebar.
@@ -87,4 +93,61 @@
   margin-left: 340px;
   padding: 2rem;
   height: calc(100vh - 64px);
+}
+
+
+.ugood-how-it-works {
+  margin-top: 2rem;
+  text-align: center;
+  margin-left: 250px;
+}
+
+.ugood-how-it-works h3 {
+  font-size: 1.8rem;
+  margin-bottom: 1rem;
+}
+
+.how-it-works-grid {
+  display: flex;
+  flex-wrap: wrap;        /* Allows wrapping on smaller screens */
+  justify-content: center;
+  gap: 2rem;              /* Space between cards */
+  margin-top: 2rem;
+}
+
+.how-it-works-card {
+  flex: 1 1 250px;        /* Grow/shrink, with a min width of ~250px */
+  max-width: 300px;       /* You can tweak as needed */
+  background-color: #f8f8f8;
+  padding: 1.5rem;
+  border-radius: 8px;
+  text-align: center;
+  transition: transform 0.2s ease;
+}
+
+.how-it-works-card:hover {
+  transform: translateY(-5px);
+}
+
+.icon-placeholder {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+}
+.landing-content{
+  margin-top: 2rem;
+  text-align: left;
+  line-height: 1.6;
+}
+
+.header {
+  font-size: 3.5rem;
+  font-weight: 1000;
+  margin-bottom: 1rem;
+}
+
+.header + .header {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #555;
+  margin-bottom: 2rem;
 }
