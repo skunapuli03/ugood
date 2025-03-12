@@ -95,48 +95,53 @@ function App() {
           // Show landing page for non-logged in users
           <>
           <div className="landing-content">
-            <h1 className="header">
-              Reflect, Connect, Grow
-            </h1>
-            <h2 className="header">
-              Learn from your past self and gain insighs <br />
-              into you personal growth journey.
-              
-            </h2>
-            <Link to="/auth" state = {journals}>
-              <button className="landing-try-ugood" >
-                Start Journaling Now ➡️
-              </button>
-            </Link>
-
-      <div className="ugood-how-it-works">
-        <h3>How It Works</h3>
-        <div className="how-it-works-grid">
-
-          {/* 1st column */}
-          <div className="how-it-works-card">
-            {/* Replace with an icon, or a real image if you have one */}
-            <div className="icon-placeholder">📔</div> 
-            <h4>Daily Journaling</h4>
-            <p>Record your thoughts, feelings, and experiences.</p>
+            <div className = "landing-content-top">
+              <h1 className="slogan">
+                Journal your way to <br/>better self-<br/>understanding.
+              </h1>
+              <h2 className="description">
+                Learn from your past self and gain insighs <br />
+                into you personal growth journey.
+                
+              </h2>
+              <Link to="/auth" state = {journals}>
+                <button className="landing-try-ugood" >
+                  Start Journaling Now ➡️
+                </button>
+              </Link>
+              <Link to="/about">
+                <button className="landing-learn-more" >Learn More</button>
+              </Link>
           </div>
+            
+        <div className="ugood-how-it-works">
+          <h3>How UGood Works</h3>
+          <div className="how-it-works-grid">
 
-          {/* 2nd column */}
-          <div className="how-it-works-card">
-            <div className="icon-placeholder">💬</div>
-            <h4>Reflective Conversations</h4>
-            <p>Chat with AI-generated versions of your past self.</p>
+            {/* 1st column */}
+            <div className="how-it-works-card">
+              {/* Replace with an icon, or a real image if you have one */}
+              <div className="icon-placeholder">📔</div> 
+              <h4>Daily Journaling</h4>
+              <p>Record your thoughts, feelings, and experiences.</p>
+            </div>
+
+            {/* 2nd column */}
+            <div className="how-it-works-card">
+              <div className="icon-placeholder">💬</div>
+              <h4>Reflective Conversations</h4>
+              <p>Chat with AI-generated versions of your past self.</p>
+            </div>
+
+            {/* 3rd column */}
+            <div className="how-it-works-card">
+              <div className="icon-placeholder">📈</div>
+              <h4>Growth Insights</h4>
+              <p>Visualize patterns and track your personal development.</p>
+            </div>
+
           </div>
-
-          {/* 3rd column */}
-          <div className="how-it-works-card">
-            <div className="icon-placeholder">📈</div>
-            <h4>Growth Insights</h4>
-            <p>Visualize patterns and track your personal development.</p>
-          </div>
-
         </div>
-      </div>
       </div>
             </>
           )}
