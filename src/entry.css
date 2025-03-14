@@ -1,70 +1,166 @@
-/*this css is literally only for the journal entry box and the reflection modal, and submit button */
-
-.journal-entry-container {
-  background-color: #f0f0f0; /* Light gray background */
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); 
-  padding: 40px; /* Increased padding for more space */
-  width: 80vw;
-  height: 70vw;
+/* Container for the entire page */
+.journal-page {
   max-width: 800px;
-  max-height: 700px;
-  margin: 80px auto 50px;
+  margin: 80px auto 0;
+  padding: 2rem;
+  font-family: 'Inter', sans-serif;
+}
+
+/* Header row styling */
+.journal-header-row {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  text-align: center; /* Center-align the title */
+  margin-bottom: 2rem;
 }
 
-.journal-title {
-  color: #333; 
-  margin-bottom: 30px; 
-  font-size: 2.2em;
-  font-weight: 600; 
+.journal-header-row h1 {
+  color: #007aff;
+  margin: 0;
+  font-size: 2.5rem;
 }
 
+.date-display {
+  background-color: #f0f9ff;
+  color: #333;
+  padding: 0.75rem 1.2rem;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* View Journals button */
+.journal-header-row button {
+  background: #007aff;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.journal-header-row button:hover {
+  background: #0056b3;
+}
+
+/* Feeling options section */
+.feeling-options {
+  margin-bottom: 2rem;
+}
+
+.feeling-options h3 {
+  color: #333;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.feeling-buttons {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.feeling-btn {
+  padding: 0.8rem 1.5rem;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  background: white;
+  color: #374151;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.feeling-btn:hover {
+  border-color: #93c5fd;
+  background: #f0f9ff;
+}
+
+.feeling-btn.active {
+  border-color: #007aff;
+  background: #007aff;
+  color: white;
+}
+
+/* Journal input textarea */
 .journal-input {
   width: 100%;
-  height: 70%; 
-  border: 1px solid #ccc;
+  min-height: 200px;
+  padding: 1rem;
+  border: 2px solid #e5e7eb;
   border-radius: 8px;
-  padding: 18px; 
-  font-size: 18px;
-  line-height: 1.6;
-  resize: vertical; /* Allow vertical resizing */
-  transition: border-color 0.3s;
-  box-sizing: border-box; /* Include padding in the height calculation */
+  font-size: 1.1rem;
+  resize: vertical;
+  margin-bottom: 1.5rem;
+  transition: border-color 0.2s ease;
 }
 
 .journal-input:focus {
-  border-color: #007aff; 
   outline: none;
+  border-color: #007aff;
 }
 
-.submit-msg {
-  background-color: #007aff; 
+/* Button row */
+.button-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+}
+
+.view-lesson-btn {
+  padding: 0.8rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: not-allowed;
+  transition: all 0.2s ease;
+  background: #cccccc;
+  color: #666;
+}
+
+.view-lesson-btn:enabled {
+  background: #ADD8E6;
+  color: white;
+  cursor: pointer;
+}
+
+.view-lesson-btn:enabled:hover {
+  background: #93c5fd;
+}
+
+.save-entry-btn {
+  padding: 0.8rem 1.5rem;
+  background: #007aff;
   color: white;
   border: none;
   border-radius: 8px;
-  padding: 15px 30px; 
+  font-size: 1rem;
   cursor: pointer;
-  font-size: 1.2em;
-  margin-top: 20px;
-  transition: background-color 0.3s;
+  transition: background-color 0.2s ease;
 }
 
-.submit-msg:hover {
-  background-color: #0066cc; 
+.save-entry-btn:hover {
+  background: #0056b3;
 }
 
-/* Modal Styles */
+.save-entry-btn:disabled {
+  background: #cccccc;
+  cursor: not-allowed;
+}
+
+/* Modal styling */
 .modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -73,173 +169,51 @@
 
 .modal-content {
   background: white;
-  padding: 30px;
+  padding: 2rem;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  max-width: 400px; 
+  width: 90%;
+  max-width: 600px;
+  position: relative;
 }
 
 .reflection-modal {
-  background: white;
-  max-width: 800px;
-  width: 80vw;
-  max-height: 80vh;
   display: flex;
   flex-direction: column;
-  padding: 0;
-  border-radius: 12px;
 }
 
 .reflection-header {
-  background-color: #007aff; 
-  padding: 20px;
-  border-radius: 12px 12px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 1.5rem;
 }
 
 .reflection-header h3 {
   margin: 0;
-  color: white;
-  font-size: 1.5em;
-}
-
-.reflection-body {
-  padding: 25px;
-  overflow-y: auto;
-  line-height: 1.6;
-  font-size: 16px;
-  color: #333;
-  max-height: calc(80vh - 80px); 
+  color: #007aff;
+  font-size: 1.5rem;
 }
 
 .close-button {
-  background: #fff; 
+  background: none;
   border: none;
-  border-radius: 50%;
-  width: 32px;
-  height: 32px;
-  font-size: 20px;
-  line-height: 1;
+  font-size: 1.5rem;
   cursor: pointer;
-  color: #333;
+  color: #666;
+  padding: 0.5rem;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.3s;
-}
-
-.close-button:hover {
-  background-color: #f0f0f0; 
-}
-
-/* Loading spinner styles */
-.loading-spinner-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-}
-
-.loading-spinner {
-  border: 3px solid #ccc; 
-  border-top: 3px solid #007aff; 
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  animation: spin 1s linear infinite;
-  margin-bottom: 10px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.loading-spinner-container p {
-  color: #333; 
-  font-size: 1.1em;
-}
-.submit-msg{
-  background-color: #007aff;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 15px 30px; 
-  cursor: pointer;
-  font-size: 1.2em;
-  margin-top: 20px;
-  transition: background-color 0.3s;
-}
-.submit-msg:hover {
-  background-color: #8ac4ff; 
-}
-.submit-msg:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-.dashboard-layout {
-  display: block;
-  margin-top: 14px; /* Offset for fixed navbar */
-  height: calc(100vh - 64px);
-  padding: 2rem;
-}
-
-/* Journals Sidebar
-   Fixed to the left with a 20px gap from the screen edge.
-   Positioned just below the navbar (top: 64px). */
-.journals-sidebar {
-  position: fixed;
-  left: 30px;                 /* 20px gap from the left edge */
-  top: 84px;                  /* Positioned below the navbar */
-  bottom: 30px;               /* Added bottom padding */
-  width: 300px;
-  height: calc(100vh - 64px);   /* Full height minus navbar */
-  background: white;
-  border-radius: 10px 12px 12px 10px; /* Rounded right side */
-  padding: 1.5rem;
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
-  overflow-y: auto;
-  z-index: 10;
-}
-
-/* Journal Card Styling */
-.journal-card {
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  transition: transform 0.2s ease;
-  border: 1px solid #e0e0e0;
-}
-
-.journal-card:hover {
-  transform: translateY(-2px);
-}
-
-/* New Entry Button Styling */
-.submit-msg {
-  display: inline-block;
-  padding: 1rem 2rem;
-  background: #007aff;
-  color: white;
-  border-radius: 8px;
-  text-decoration: none;
-  font-weight: 500;
   transition: background-color 0.2s ease;
 }
 
-.submit-msg:hover {
-  background: #0056b3;
+.close-button:hover {
+  background: #f0f0f0;
 }
 
-/* Main Content Area
-   Added left margin to ensure it doesn't overlap the fixed sidebar.
-   The margin-left is calculated as 300px (sidebar width) + 20px (gap) + extra 20px for spacing. */
-.main-content {
-  margin-left: 340px;
-  padding: 2rem;
-  height: calc(100vh - 64px);
+.reflection-body {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #333;
 }

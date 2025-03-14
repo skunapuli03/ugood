@@ -4,8 +4,6 @@ import './App.css';
 import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./navbar.jsx";
 import { createClient } from '@supabase/supabase-js'
-import { Auth } from '@supabase/auth-ui-react'
-import { ThemeSupa } from '@supabase/auth-ui-shared'
 import { motion } from "framer-motion";
 //REFER TO AUTH.JSX TO MAKE SURE YOU GET JOURNAL HISTORY, SO WHEN USER IS LOGGED IN THEY CAN GET THEIR CONTENT
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8'
@@ -13,7 +11,7 @@ const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co"
 const supabase = createClient(supabaseUrl, supabaseKey)
 
 function App() {
-  const [session, setSession] = useState(null);
+  const [session, setSession] = useState();
   const [journals, setJournals] = useState([]);
 
   useEffect(() => {
@@ -55,42 +53,44 @@ function App() {
       <div className="app-content">
         {session ? (
           // Show dashboard for logged in users
-          <div className="dashboard-layout">
-            {/* Left Sidebar */}
-            <aside className="journals-sidebar">
-              <h2>Your Journal History</h2>
+          <main className="dashboard-layout">
+            <div className="journals-container">
+              <div className="journal-header">
+                <h2 className="journal-header-text">Your Journals</h2>
+                <div className="journals-actions">
+                  <Link to="/entry" state={{ session }} className="new-entry-btn" >
+                    Write New Entry ✍️
+                  </Link>
+                  <button 
+                    onClick={() => handleWhatIf(journals.id)}
+                    className="reflection-chat-btn"
+                  >
+                    Reflection Chat 🤖
+                  </button>
+                </div>
+              </div>
+            </div>
               <div className="journals-list">
                 {journals?.map(journal => (
                   <motion.div 
                     key={journal.id}
                     className="journal-card"
                   >
-                    <p className="journal-preview"> <button> Journal Entry </button>
-                      {journal.content.substring(0, 10)}...
+                    <p className="journal-preview"> 
+                      {journal.content.substring(0, 50)}...
                     </p>
                     {journal.reflection && (
                       <div className="lesson-preview">
-                        <p><button > Journal Lesson </button>{journal.reflection.substring(0,10)}</p>
-                        <button 
-                          onClick={() => handleWhatIf(journal.id)}
-                          className="what-if-btn"
-                        >
-                          What If? 🤔
-                        </button>
+                        <p>{journal.reflection.substring(0,45)}...</p>
                       </div>
                     )}
+                    
                   </motion.div>
                 ))}
               </div>
-            </aside>
-
-            {/* Main Content */}
-            <main className="main-content">
-              <Link to="/auth" className="new-entry-btn">
-                Write New Entry ✍️
-              </Link>
             </main>
-          </div>
+
+
         ) : (
           // Show landing page for non-logged in users
           <>

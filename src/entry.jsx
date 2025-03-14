@@ -1,313 +1,167 @@
-import React, { useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import './entry.css';
-import ReflectionCard from './ReflectionCard';
-import ChatInterface from './ChatInterface';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import './entry.css';
+import Navbar from './navbar';
+import { Link } from 'react-router-dom';
 
-// Initialize Supabase client
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8';
 const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-//
-// Modal Component for Alerts & Reflections
-//
-const Modal = ({ message, onClose, isReflection = false }) => (
+// Reflection modal for viewing generated reflections
+const ReflectionModal = ({ reflection, onClose }) => (
   <div className="modal-overlay">
-    <div className={`modal-content ${isReflection ? 'reflection-modal' : ''}`}>
-      {isReflection ? (
-        <>
-          <div className="reflection-header">
-            <h3>✨ Your Reflection</h3>
-            <button className="close-button" onClick={onClose}>×</button>
-          </div>
-          <div className="reflection-body">{message}</div>
-        </>
-      ) : (
-        <>
-          <p>{message}</p>
-          <button onClick={onClose}>Close</button>
-        </>
-      )}
+    <div className="modal-content reflection-modal">
+      <div className="reflection-header">
+        <h3>✨ Your Reflection</h3>
+        <button className="close-button" onClick={onClose}>×</button>
+      </div>
+      <div className="reflection-body">{reflection}</div>
     </div>
   </div>
 );
 
-//
-// Main Entry Component – Only works when session (user is logged in) is true
-//
-function Entry({ session }) {
-  // State declarations
+const Entry = ({ session }) => {
+  const [localSession, setLocalSession] = useState(session);
+  const [feeling, setFeeling] = useState('Neutral');
   const [journalText, setJournalText] = useState('');
-  const [loading, setLoading] = useState(false);
   const [reflection, setReflection] = useState('');
-  const [showModal, setShowModal] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [showReflectionModal, setShowReflectionModal] = useState(false);
-  const [showSignUpPrompt, setShowSignUpPrompt] = useState(false);
-  const [showChat, setShowChat] = useState(false);
-  const [chatHistory, setChatHistory] = useState([]);
-  const [selectedJournal, setSelectedJournal] = useState(null);
-  const [journals, setJournals] = useState([]);
 
-  // Close modal helper functions
-  const closeModal = () => setShowModal(false);
-  const closeReflectionModal = () => setShowReflectionModal(false);
-
-  // Fetch journals when session is available
+  // Re-fetch session if not provided via prop
   useEffect(() => {
-    if (session) {
-      fetchJournals();
+    if (!localSession) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setLocalSession(session);
+      });
     }
-  }, [session]);
+  }, [localSession]);
 
-  // Function to fetch journals for the logged-in user
-  const fetchJournals = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('journals')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      setJournals(data || []);
-    } catch (error) {
-      console.error('Error fetching journals:', error);
-      setShowModal(true);
-    }
-  };
-
-  // Helper: Group journals by the date portion of created_at
-  const groupJournalsByDate = (journalsArray) => {
-    return journalsArray.reduce((groups, journal) => {
-      // Get date string (e.g., "7/20/2023")
-      const dateKey = new Date(journal.created_at).toLocaleDateString();
-      if (!groups[dateKey]) {
-        groups[dateKey] = [];
-      }
-      groups[dateKey].push(journal);
-      return groups;
-    }, {});
-  };
-
-  // Handle journal submission: Generate reflection, insert journal, and update state
-  const handleSubmit = async () => {
+  const handleSaveEntry = async () => {
     if (!journalText.trim()) {
-      setShowModal(true);
+      alert('Please write something before saving.');
+      return;
+    }
+    if (!localSession?.user?.id) {
+      alert('Please log in first.');
       return;
     }
     setLoading(true);
-    setReflection('');
-    setShowReflectionModal(false);
+    setReflection(''); // Clear any previous reflection
     try {
-      // Call your API to generate a reflection for the journal entry
+      // Call your reflection generation API
       const response = await fetch('http://localhost:9999/generate-reflections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ journalEntry: journalText }),
+        body: JSON.stringify({ journalEntry: journalText })
       });
       const data = await response.json();
-      setReflection(data.reflection);
+      const generatedReflection = data?.reflection || '';
 
-      // Insert new journal entry into Supabase
-      const { data: newJournal, error } = await supabase
+      // Save entry to Supabase
+      const { error } = await supabase
         .from('journals')
         .insert([{
-          user_id: session.user.id,
+          user_id: localSession.user.id,
+          feeling: feeling,
           content: journalText,
-          reflection: data.reflection,
+          reflection: generatedReflection,
           created_at: new Date().toISOString()
         }]);
-      
-      // Update state using the new journal entry returned from Supabase
-      if (!error && session && newJournal && newJournal.length) {
-        setJournals(prevJournals => [newJournal[0], ...prevJournals]);
+
+      if (error) {
+        console.error('Supabase insert error:', error);
+        alert('Error saving journal entry.');
       } else {
-        setShowSignUpPrompt(true);
+        setReflection(generatedReflection);
+        alert('Journal entry saved successfully!');
       }
-    } catch (error) {
-      console.error('Error:', error);
-      setShowModal(true);
+    } catch (err) {
+      console.error('Error saving entry:', err);
+      alert('Error saving journal entry.');
     } finally {
       setLoading(false);
     }
   };
-
-  // Handle "What If?" logic to start conversation with past self
-  const handleWhatIf = async (journalId) => {
-    try {
-      const journal = journals.find(j => j.id === journalId);
-      if (!journal) return;
-      setLoading(true);
-      setSelectedJournal(journal);
-      // Call your API for a "what-if" scenario prompt
-      const response = await fetch('http://localhost:9999/generate-reflections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          journalEntry: journal.content,
-          type: 'what-if-start'
-        })
-      });
-      const data = await response.json();
-      setChatHistory([{
-        type: 'ai',
-        content: "Based on your journal, let's explore what could have been different. Ask if there's something that could've been changed.",
-        timestamp: new Date().toISOString()
-      }]);
-      setShowChat(true);
-    } catch (error) {
-      console.error('Error:', error);
-      setShowModal(true);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Group journals by date for the sidebar
-  const groupedJournals = groupJournalsByDate(journals);
 
   return (
-    <div className="dashboard-layout">
-      {/* Sidebar: Group journals by date */}
-      <aside className="journals-sidebar">
-        <h2>Your Journals</h2>
-        <div className="journals-list">
-          {Object.keys(groupedJournals).map(date => (
-            <div key={date} className="journal-date-group">
-              {/* Date header for each group */}
-              <h3 className="date-header">{date}</h3>
-              {groupedJournals[date].map(journal => (
-                <motion.div 
-                  key={journal.id}
-                  className="journal-card"
-                  onClick={() => setSelectedJournal(journal)} // Open detailed view on click
-                  whileHover={{ scale: 1.02 }}
-                >
-                  <p className="journal-preview">
-                    {journal.content.substring(0, 10)}...
-                  </p>
-                  {journal.reflection && (
-                    <div className="lesson-preview">
-                      <p>{journal.reflection.substring(0, 10)}</p>
-                      <button 
-                        onClick={(e) => { e.stopPropagation(); handleWhatIf(journal.id); }}
-                        className="what-if-btn"
-                      >
-                        What If? 🤔
-                      </button>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
-            </div>
-          ))}
-        </div>
-      </aside>
+    <>
+      <Navbar session={localSession} />
+      <div className="journal-page">
+        <div className="journal-header-row">
+          <h1>Today's Journal</h1>
+          <div className="date-display">{new Date().toLocaleDateString()}</div>
+          <div> 
+            <Link>
+              <button> View Journals ➔</button>
+            </Link>
 
-      {/* Main Content: Journal Entry Form or Chat Interface */}
-      <main className="main-content">
-        {showChat ? (
-          <ChatInterface 
-            journal={selectedJournal}
-            onClose={() => setShowChat(false)}
-            session={session}
-          />
-        ) : (
-          <div className="entry-container">
-            <motion.div 
-              initial={{ x: 0 }}
-              animate={{ x: -100 }}
-              transition={{ duration: 0.5, ease: 'easeInOut' }}
-              className={`journal-entry-container ${showReflectionModal ? 'minimized' : ''}`}
-            >
-              <h2 className="journal-title">📝 Journal Entry</h2>
-              <textarea
-                className="journal-input"
-                placeholder="Your thoughts, feelings, or observations"
-                value={journalText}
-                onChange={(e) => setJournalText(e.target.value)}
-              />
-              <button 
-                className="submit-msg" 
-                onClick={reflection ? () => setShowReflectionModal(true) : handleSubmit}
-                disabled={loading}
-              >
-                {loading ? 'Generating...' : reflection ? 'View Lesson' : 'Reflect 😊'}
-              </button>
-            </motion.div>
-            <motion.div
-              initial={{ x: '100%', opacity: 0 }} 
-              animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.7, delay: 0.2, ease: 'easeInOut' }}
-              className="reflection-container"
-            >
-              {reflection && <ReflectionCard reflection={reflection} />}
-            </motion.div>
           </div>
-        )}
-      </main>
+        </div>
 
-      {/* Detailed View Overlay for Selected Journal */}
-      <AnimatePresence>
-        {selectedJournal && (
-          <motion.div
-            className="detail-overlay"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div
-              className="detail-container"
-              initial={{ scale: 0.8 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.8 }}
+        <div className="feeling-options">
+          <h3>How are you feeling today?</h3>
+          <div className="feeling-buttons">
+            <button
+              className={`feeling-btn ${feeling === 'Good' ? 'active' : ''}`}
+              onClick={() => setFeeling('Good')}
+              type="button"
             >
-              <button className="close-detail" onClick={() => setSelectedJournal(null)}>✕</button>
-              <h2 className="detail-title">Journal Entry</h2>
-              {/* Display full creation date and time */}
-              <p className="entry-date">
-                {new Date(selectedJournal.created_at).toLocaleString()}
-              </p>
-              {/* Full journal content */}
-              <div className="full-entry">
-                {selectedJournal.content}
-              </div>
-              {selectedJournal.reflection && (
-                <>
-                  <h3>Lesson</h3>
-                  <div className="full-lesson">
-                    {selectedJournal.reflection}
-                  </div>
-                </>
-              )}
-              <button
-                className="converse-btn"
-                onClick={() => alert("Initiating conversation with your past self!")}
-              >
-                Converse with Your Past Self
-              </button>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              Good 😊
+            </button>
+            <button
+              className={`feeling-btn ${feeling === 'Neutral' ? 'active' : ''}`}
+              onClick={() => setFeeling('Neutral')}
+              type="button"
+            >
+              Neutral 😐
+            </button>
+            <button
+              className={`feeling-btn ${feeling === 'Not Great' ? 'active' : ''}`}
+              onClick={() => setFeeling('Not Great')}
+              type="button"
+            >
+              Not Great 😔
+            </button>
+          </div>
+        </div>
 
-      {/* Modals for alerts and reflection display */}
-      {showModal && (
-        <Modal 
-          message="Please write something before submitting!" 
-          onClose={closeModal} 
+        <textarea
+          className="journal-input"
+          placeholder="What's on your mind today?"
+          value={journalText}
+          onChange={(e) => setJournalText(e.target.value)}
         />
-      )}
-      {showReflectionModal && reflection && (
-        <Modal
-          message={reflection}
-          onClose={closeReflectionModal}
-          isReflection={true}
-        />
-      )}
-    </div>
+
+        <div className="button-row">
+          <button
+            className="view-lesson-btn"
+            onClick={() => {
+              if (reflection) setShowReflectionModal(true);
+            }}
+            disabled={!reflection}  // Disable button if no reflection
+          >
+            View Lesson
+          </button>
+          <button
+            className="save-entry-btn"
+            onClick={handleSaveEntry}
+            disabled={loading}
+          >
+            {loading ? 'Saving...' : 'Save Entry'}
+          </button>
+        </div>
+
+        {showReflectionModal && reflection && (
+          <ReflectionModal
+            reflection={reflection}
+            onClose={() => setShowReflectionModal(false)}
+          />
+        )}
+      </div>
+    </>
   );
-}
+};
 
 export default Entry;

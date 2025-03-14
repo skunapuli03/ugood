@@ -11,6 +11,8 @@
 .description{
   color: #555;
   font-size: 1.1rem;
+  font-weight: normal;
+  
 }
 .landing-try-ugood {
   background-color: #007aff; /* A blue button color, for example */
@@ -167,24 +169,65 @@
   z-index: 4 ;
 }
 
-.journals-timeline {
-  margin: 2rem 1rem;
+
+.journal-header{
+  padding: 20px;
 }
-.timeline-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+.journals-list{
+  margin-left: 20px;
 }
-.timeline-container {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.journal-preview{
+  color: black;
+  font-family: 'Inter';
+  font-size: 1.2rem;
+  margin-bottom: 5px;
 }
-.timeline-item {
-  padding: 1rem;
-  border-left: 3px solid #007aff;
-  background: #f8f9fa;
-  border-radius: 4px;
+.lesson-preview{
+  color: #555;
+  font-size: 1.1rem;
+  font-weight: normal;
 }
 
+/* New header row container */
+.journal-header {
+  display: flex;
+  justify-content: space-between; /* Title on left, actions on right */
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 20px;
+  gap: 500px;
+}
+
+.journals-actions {
+  display: flex;
+  gap: 1rem; /* Space between buttons */
+}
+
+.reflection-chat-btn {
+  padding: 1rem 2rem;
+  background: #f564ff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.reflection-chat-btn:hover {
+  background: #ee00ff;
+}
+
+.new-entry-btn {
+  display: inline-block;
+  padding: 1rem 2rem;
+  background: #007aff;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.new-entry-btn:hover {
+  background: #0056b3;
+}
