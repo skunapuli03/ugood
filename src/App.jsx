@@ -76,15 +76,18 @@ function App() {
                     key={journal.id}
                     className="journal-card"
                   >
+                    
                     <p className="journal-preview"> 
-                      {journal.content.substring(0, 50)}...
+                      {journal.content.substring(0, 90)}...
                     </p>
                     {journal.reflection && (
                       <div className="lesson-preview">
-                        <p>{journal.reflection.substring(0,45)}...</p>
+                        <p>{journal.reflection.substring(0,75)}...</p>
                       </div>
                     )}
-                    
+                    <Link to={`/journal/${journal.id}`} className="read-more-link">
+                      Read More ➡️
+                    </Link>  
                   </motion.div>
                 ))}
               </div>

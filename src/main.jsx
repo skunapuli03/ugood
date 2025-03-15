@@ -11,6 +11,7 @@ import Features from './features.jsx'
 import About from './about.jsx';
 import Resources from './resources.jsx';
 import AuthPage from './auth.jsx';
+import JournalDetail from './journalDetail.jsx';
 
 
 const router = createBrowserRouter([
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
     path: "/auth",
     element: <Layout> <AuthPage /></Layout>,
   },
+  {
+    path: "/journal/:id",
+    element: <Layout> <JournalDetail /></Layout>,
+  }
 ]);
 
 

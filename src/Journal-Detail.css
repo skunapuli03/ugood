@@ -1,0 +1,97 @@
+/* Reset and Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #f5faff;
+}
+
+
+/* Journal Detail Page Using Full Width/Height */
+.journal-detail-page {
+  width: 100%;
+  min-height: 100%;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Header Styling */
+.journal-detail-header {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.back-button {
+  color: #007aff;
+  text-decoration: none;
+  font-size: 1.2rem;
+  transition: color 0.2s ease;
+}
+
+.back-button:hover {
+  color: #0056b3;
+}
+
+.journal-date {
+  color: #666;
+  font-size: 1.1rem;
+}
+
+/* Main Content Container */
+.journal-detail-content {
+  width: 100%;
+  max-width: 1200px;
+  background-color: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+/* Feeling Indicator */
+.feeling-indicator {
+  background: #e3f2fd;
+  color: #007aff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  display: inline-block;
+  margin-bottom: 2rem;
+}
+
+/* Journal Entry and Reflection Sections */
+.journal-entry, 
+.journal-reflection {
+  margin-bottom: 2rem;
+}
+
+.journal-entry h2,
+.journal-reflection h2 {
+  font-size: 1.5rem;
+  color: #007aff;
+  margin-bottom: 1rem;
+}
+
+.journal-entry p,
+.journal-reflection p {
+  font-size: 1.1rem;
+  color: #333;
+  line-height: 1.6;
+}
+
+/* Reflection Section Specific Styling */
+.journal-reflection {
+  background: #f8f9fa;
+  padding: 2rem;
+  border-radius: 12px;
+}

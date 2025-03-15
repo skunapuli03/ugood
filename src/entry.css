@@ -8,6 +8,7 @@
 
 /* Header row styling */
 .journal-header-row {
+  gap: 20px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -99,7 +100,7 @@
   margin-bottom: 1.5rem;
   transition: border-color 0.2s ease;
 }
-
+x
 .journal-input:focus {
   outline: none;
   border-color: #007aff;

@@ -13,7 +13,7 @@ const ReflectionModal = ({ reflection, onClose }) => (
   <div className="modal-overlay">
     <div className="modal-content reflection-modal">
       <div className="reflection-header">
-        <h3>✨ Your Reflection</h3>
+        <h3>✨ Your Lesson</h3>
         <button className="close-button" onClick={onClose}>×</button>
       </div>
       <div className="reflection-body">{reflection}</div>
@@ -93,7 +93,7 @@ const Entry = ({ session }) => {
           <h1>Today's Journal</h1>
           <div className="date-display">{new Date().toLocaleDateString()}</div>
           <div> 
-            <Link>
+            <Link to = "/">
               <button> View Journals ➔</button>
             </Link>
 
@@ -115,7 +115,7 @@ const Entry = ({ session }) => {
               onClick={() => setFeeling('Neutral')}
               type="button"
             >
-              Neutral 😐
+              Normal 😐
             </button>
             <button
               className={`feeling-btn ${feeling === 'Not Great' ? 'active' : ''}`}
