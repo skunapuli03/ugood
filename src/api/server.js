@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.post('/generate-reflections', handler);
 
-const PORT = 9999;
+const PORT = process.env.PORT ||9999;
 app.listen(PORT, () => {
   console.log(`Server listening on port ${PORT}`);//this is to let us know that server is working
 
