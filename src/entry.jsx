@@ -51,7 +51,7 @@ const Entry = ({ session }) => {
     setReflection(''); // Clear any previous reflection
     try {
       // Call your reflection generation API
-      const response = await fetch('https://ugood-3osi.onrender.com/', {
+      const response = await fetch('https://ugood-3osi.onrender.com/generate-reflections', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ journalEntry: journalText })
@@ -72,14 +72,12 @@ const Entry = ({ session }) => {
 
       if (error) {
         console.error('Supabase insert error:', error);
-        alert('Error saving journal entry.');
       } else {
         setReflection(generatedReflection);
-        alert('Journal entry saved successfully!');
+        console.log('Journal entry saved successfully!');
       }
     } catch (err) {
       console.error('Error saving entry:', err);
-      alert('Error saving journal entry.');
     } finally {
       setLoading(false);
     }
