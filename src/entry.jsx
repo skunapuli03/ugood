@@ -51,7 +51,7 @@ const Entry = ({ session }) => {
     setReflection(''); // Clear any previous reflection
     try {
       // Call your reflection generation API
-      const response = await fetch('http://localhost:9999/generate-reflections', {
+      const response = await fetch('https://ugood-3osi.onrender.com/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ journalEntry: journalText })
