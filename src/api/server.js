@@ -8,7 +8,10 @@ app.use(cors({
   origin: 'https://ugood.vercel.app', 
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
-}));
+  
+}) );
+
+console.log("CORS enabled for origin: https://ugood.vercel.app/entry"),
 app.use(bodyParser.json());
 app.post('https://ugood-3osi.onrender.com/generate-reflections', handler);
 
