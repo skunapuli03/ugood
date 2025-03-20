@@ -5,7 +5,7 @@ import cors from 'cors';
 
 const app = express();
 app.use(cors({
-  origin: 'https://ugood.vercel.app', 
+  origin: 'https://ugood.vercel.app/entry', 
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   
