@@ -7,7 +7,10 @@ import cors from 'cors';
 
 const app = express();
 app.use(cors({
-  origin: 'https://ugood.vercel.app/entry', 'https://ugood-3osi.onrender.com/generate-reflections': true,
+  origin: [
+    'https://ugood.vercel.app/', 
+    'https://ugood-3osi.onrender.com/'
+  ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   
