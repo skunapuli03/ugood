@@ -8,15 +8,15 @@ import cors from 'cors';
 const app = express();
 app.use(cors({
   origin: [
-    'https://ugood.vercel.app/', 
-    'https://ugood-3osi.onrender.com/'
+    'https://ugood.vercel.app', 
+    'https://ugood-3osi.onrender.com'
   ],
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   
 }) );
 
-console.log("CORS enabled for origin: https://ugood.vercel.app/"),
+console.log("CORS enabled for origin: https://ugood.vercel.app, and the render.com one"),
 app.use(bodyParser.json());
 app.post('/generate-reflections', handler);
 
