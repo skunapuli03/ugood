@@ -5,15 +5,15 @@ import cors from 'cors';
 
 const app = express();
 app.use(cors({
-  origin: 'https://ugood.vercel.app/entry', 
+  origin: 'https://ugood.vercel.app/', 
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   
 }) );
 
-console.log("CORS enabled for origin: https://ugood.vercel.app/entry"),
+console.log("CORS enabled for origin: https://ugood.vercel.app/"),
 app.use(bodyParser.json());
-app.post('https://ugood-3osi.onrender.com/generate-reflections', handler);
+app.post('/generate-reflections', handler);
 
 const PORT = process.env.PORT ||9999;
 app.listen(PORT, () => {
