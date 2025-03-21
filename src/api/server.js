@@ -3,9 +3,11 @@ import bodyParser from 'body-parser';
 import handler from './generate-reflections.js';
 import cors from 'cors';
 
+
+
 const app = express();
 app.use(cors({
-  origin: 'https://ugood.vercel.app/', 
+  origin: 'https://ugood.vercel.app/entry', 'https://ugood-3osi.onrender.com/generate-reflections': true,
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   
