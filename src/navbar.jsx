@@ -24,9 +24,7 @@ const Navbar = ({ session }) => {
         <nav className="navbar">
             <Link to='/'><div className='logo'>UGood</div></Link>
             <div className='links'>
-                <Link to="/features">Features</Link> 
-                <Link to="/resources">Resources</Link>
-                <Link to="/about">About</Link>
+                {/*<Link to="/contact">Contact</Link> let's put this up after launching it*/}
             </div>
             <div className='auth-buttons'>
                 {session ? (
@@ -41,7 +39,7 @@ const Navbar = ({ session }) => {
                     </div>
                 ) : (
                     <Link to="/auth">
-                        <button className='primary'>Sign Up/Login 📖</button>
+                        <button className='primary'>Sign In 📖</button>
                     </Link>
                 )}
             </div>

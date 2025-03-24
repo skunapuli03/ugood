@@ -8,10 +8,11 @@ import App from './App.jsx';
 import Layout from './layout.jsx'; // Import the layout
 import Entry from './entry.jsx';
 import Features from './features.jsx'
-import About from './about.jsx';
+import About from './Contact.jsx';
 import Resources from './resources.jsx';
 import AuthPage from './auth.jsx';
 import JournalDetail from './journalDetail.jsx';
+import Contact from './Contact.jsx';
 
 
 const router = createBrowserRouter([
@@ -28,8 +29,8 @@ const router = createBrowserRouter([
     element: <Layout> <Features></Features></Layout>,
   },
   {
-    path: "/about",
-    element: <Layout> <About/></Layout>,
+    path: "/contact",
+    element: <Layout> <Contact/></Layout>,
   },
   {
     path: "/resources",

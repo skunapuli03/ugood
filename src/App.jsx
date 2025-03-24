@@ -61,12 +61,6 @@ function App() {
                   <Link to="/entry" state={{ session }} className="new-entry-btn" >
                     Write New Entry ✍️
                   </Link>
-                  <button 
-                    onClick={() => handleWhatIf(journals.id)}
-                    className="reflection-chat-btn"
-                  >
-                    Reflection Chat 🤖
-                  </button>
                 </div>
               </div>
             </div>
@@ -100,21 +94,25 @@ function App() {
           <div className="landing-content">
             <div className = "landing-content-top">
               <h1 className="slogan">
-                Journal your way to <br/>better self-<br/>understanding.
+                Journal your way to a Better You.
               </h1>
               <h2 className="description">
-                Learn from your past self and gain insighs <br />
-                into you personal growth journey.
-                
+              Discover the power of interactive journaling—where your 
+              past self guides your future growth. <br/>
+              Write, reflect, and learn in real time as you transform your 
+              thoughts into actionable insights. <br/>
+              Embrace a two-way conversation that helps you grow every day.               
               </h2>
-              <Link to="/auth" state = {journals}>
-                <button className="landing-try-ugood" >
-                  Start Journaling Now ➡️
-                </button>
-              </Link>
-              <Link to="/about">
-                <button className="landing-learn-more" >Learn More</button>
-              </Link>
+              <div className="onboard-buttons">
+                <Link to="/auth" state = {journals}>
+                  <button className="landing-try-ugood" >
+                    Start Journaling Now ➡️
+                  </button>
+                </Link>
+                <Link to="/about">
+                  <button className="landing-learn-more" >Learn More</button>
+                </Link>
+              </div>  
           </div>
             
         <div className="ugood-how-it-works">
@@ -138,10 +136,10 @@ function App() {
 
             {/* 3rd column */}
             <div className="how-it-works-card">
-              <div className="icon-placeholder">📈</div>
-              <h4>Growth Insights</h4>
-              <p>Visualize patterns and track your personal development.</p>
-            </div>
+              <div className="icon-placeholder">📖</div>
+              <h4>Instant Lessons</h4>
+              <p>Instantly receive personalized advice to guide your journey.</p>
+              </div>
 
           </div>
         </div>

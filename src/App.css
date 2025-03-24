@@ -3,10 +3,18 @@
 
 
 .landing-content{
-  padding: 0;
   font-family: 'Inter', sans-serif; /* Now your entire site uses Inter */
   color: #333;
-  margin-left: 30px;
+  text-align: center;
+  margin-top: 2rem;
+  line-height: 1.6;
+}
+.landing-content-top{
+  text-align: center;
+  align-content: center;
+  display: flexbox;
+  margin-left: 250px;
+  padding: 20px;
 }
 .description{
   color: #555;
@@ -39,6 +47,8 @@
   margin-top: 64px; /* Offset for fixed navbar */
   height: calc(100vh - 64px);
   padding: 2rem;
+  align-items: center; 
+  justify-content: center; 
 }
 
 /* Journals Sidebar
@@ -135,12 +145,7 @@
   font-size: 2rem;
   margin-bottom: 0.75rem;
 }
-.landing-content{
-  margin-top: 2rem;
-  text-align: left;
-  line-height: 1.6;
-  padding: 2rem;
-}
+
 .learning-content-top{
   z-index: 2;
 }
@@ -174,7 +179,13 @@
   padding: 20px;
 }
 .journals-list{
-  margin-left: 20px;
+  align-content: center;
+  max-width: 800px;
+  margin: 20px auto; /* centers the container horizontally */
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
 }
 .journal-preview{
   color: black;
@@ -202,7 +213,9 @@
   display: flex;
   gap: 1rem; /* Space between buttons */
 }
-
+.journal-container{
+  margin-right: 100px;
+}
 .reflection-chat-btn {
   padding: 1rem 2rem;
   background: #f564ff;
