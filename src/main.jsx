@@ -41,14 +41,14 @@ const router = createBrowserRouter([
     path: "/journal/:id",
     element: <Layout> <JournalDetail /></Layout>,
   },
-  /*{
+  {
     path: "/auth/email-confirmation",
     element: <Layout><EmailConfirmation /></Layout>,
-  },*/
-  /*{
+  },
+  {
     path: "/auth/reset-password",
     element: <Layout><ResetPasswordConfirmation /></Layout>,
-  }*/
+  }
 ]);
 
 
