@@ -11,6 +11,7 @@ import Features from './features.jsx'
 import Resources from './resources.jsx';
 import AuthPage from './auth.jsx';
 import JournalDetail from './journalDetail.jsx';
+import ResetPasswordConfirmation from './reset-password.jsx';
 //need to import contact after launching
 
 const router = createBrowserRouter([
@@ -38,6 +39,10 @@ const router = createBrowserRouter([
   {
     path: "/journal/:id",
     element: <Layout> <JournalDetail /></Layout>,
+  },
+  {
+    path: "/auth/reset-password",
+    element: <Layout><ResetPasswordConfirmation /></Layout>,
   }
 ]);
 
