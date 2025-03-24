@@ -1,9 +1,8 @@
 import {Link} from "react-router-dom";
 import './App.css';
 import React, { useState } from 'react';
-import './contact.css';
+import './Contact.css';
 
-/* Front-end for about page  */
 
 function Contact() {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
@@ -14,8 +13,7 @@ function Contact() {
   };
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    // Add your submission logic here (e.g., call an API)
+    e.preventDefault();//need to include the email sending logic, i will have to use some api
     setStatus('😊 Thank you for reaching out! We will get back to you soon.');
     setFormData({ name: '', email: '', message: '' });
   };
