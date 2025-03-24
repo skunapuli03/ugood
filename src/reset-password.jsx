@@ -3,10 +3,10 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.VITE_SUPABASE_URL; // or your hardcoded URL
-const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY; // or your key
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8'
+const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co"
+const supabase = createClient(supabaseUrl, supabaseKey)
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 function ResetPasswordConfirmation() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState('');
