@@ -12,6 +12,7 @@ import Resources from './resources.jsx';
 import AuthPage from './auth.jsx';
 import JournalDetail from './journalDetail.jsx';
 import ResetPasswordConfirmation from './reset-password.jsx';
+import EmailConfirmation from './EmailConfirmation.jsx';
 //need to import contact after launching
 
 const router = createBrowserRouter([
