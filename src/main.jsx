@@ -42,11 +42,11 @@ const router = createBrowserRouter([
     element: <Layout> <JournalDetail /></Layout>,
   },
   {
-    path: "/email-confirmation",
+    path: "/EmailConfirmation",
     element: <Layout><EmailConfirmation /></Layout>,
   },
   {
-    path: "/reset-password",
+    path: "/auth/reset-password",
     element: <Layout><ResetPasswordConfirmation /></Layout>,
   }
 ]);
