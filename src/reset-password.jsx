@@ -83,7 +83,3 @@ function ResetPasswordConfirmation() {
 }
 
 export default ResetPasswordConfirmation;
-
-await supabase.auth.resetPasswordForEmail(email, {
-  redirectTo: `${window.location.origin}/reset-password?type=recovery`
-});
