@@ -1,7 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import supabase from './supabaseClient';
 
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = process.env.VITE_SUPABASE_URL; // or your hardcoded URL
+const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY; // or your key
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 function ResetPasswordConfirmation() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState('');
