@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase setup
-const supabase = createClient("https://ggksgziwgftlyfngtolu.supabase.co", "YOUR_SUPABASE_KEY");
+const supabase = createClient("https://ggksgziwgftlyfngtolu.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8");
 
 function ResetPasswordConfirmation() {
   const [password, setPassword] = useState('');
