@@ -12,7 +12,6 @@ html, body {
   background-color: #f5faff;
 }
 
-
 /* Journal Detail Page Using Full Width/Height */
 .journal-detail-page {
   width: 100%;
@@ -21,6 +20,7 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding-top: 80px; /* Add padding to account for the fixed navbar */
 }
 
 /* Header Styling */
@@ -38,7 +38,6 @@ html, body {
   text-decoration: none;
   font-size: 1.2rem;
   transition: color 0.2s ease;
-  margin-top: 20px;
 }
 
 .back-button:hover {
