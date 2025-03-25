@@ -63,7 +63,23 @@ function App() {
                   </Link>
                 </div>
               </div>
-            </div>
+              {journals.length === 0 ? (
+                <div className="no-journals">
+                  <h3>Welcome to UGood!</h3>
+                  <p>Start your journaling journey today. Writing your thoughts and reflections can help you grow and improve every day.</p>
+                  <p>Here are some tips to get started:</p>
+                  <ul>
+                    <li>Write about your day and how you felt.</li>
+                    <li>Reflect on any challenges you faced and how you overcame them.</li>
+                    <li>Set goals for tomorrow and plan how to achieve them.</li>
+                  </ul>
+                  <p>Remember, journaling is a personal journey. There are no right or wrong entries. Just write what feels right for you.</p>
+                  <Link to="/entry" state={{ session }} className="new-entry-btn">
+                    Start Your First Entry ➡️
+                  </Link>
+                </div>
+              ) : (
+            
               <div className="journals-list">
                 {journals?.map(journal => (
                   <motion.div 
@@ -85,6 +101,8 @@ function App() {
                   </motion.div>
                 ))}
               </div>
+              )}
+            </div>
             </main>
 
 
