@@ -13,7 +13,7 @@ function ResetPasswordConfirmation() {
   useEffect(() => {
     // Automatically grabs session from URL when page loads
     const initSession = async () => {
-      const { error } = await supabase.auth.getSessionFromUrl();
+      const { error } = await supabase.auth.setSessionFromUrl();
       if (error) console.error("Error getting session from URL:", error);
     };
     initSession();
