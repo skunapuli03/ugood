@@ -148,6 +148,7 @@ function App() {
               <div className="icon-placeholder">💬</div>
               <h4>Reflective Conversations</h4>
               <p>Chat with AI-generated versions of your past self.</p>
+              <h4>*currently in the works*</h4>
             </div>
 
             {/* 3rd column */}
