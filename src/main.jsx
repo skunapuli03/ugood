@@ -42,7 +42,7 @@ const router = createBrowserRouter([
     element: <Layout> <JournalDetail /></Layout>,
   },
   {
-    path: "/EmailConfirmation",
+    path: "/auth/EmailConfirmation",
     element: <Layout><EmailConfirmation /></Layout>,
   },
   {
