@@ -10,7 +10,7 @@ const supabase = createClient(
 
 function ResetPasswordConfirmation() {
   const [password, setPassword] = useState('');
-  const [status, setStatus] = useState('');
+  const [status, setStatus] = useState('Verifying your reset link...');
   const [sessionVerified, setSessionVerified] = useState(false); // Track if session is verified
   const [isPasswordReset, setIsPasswordReset] = useState(false); // Track if password reset is in progress
   const navigate = useNavigate();
@@ -27,14 +27,21 @@ function ResetPasswordConfirmation() {
         return;
       }
 
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.search);
-      if (error) {
-        console.error("Error exchanging code for session:", error);
-        setStatus("Failed to verify reset link. Please try again.");
-      } else {
-        setSessionVerified(false); // Session is verified
+      try {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+        if (error) {
+          console.error("Error exchanging code for session:", error);
+          setStatus("Failed to verify reset link. Please try again.");
+        } else {
+          setSessionVerified(true); // Session is verified
+          setStatus(''); // Clear the status message
+        }
+      } catch (err) {
+        console.error("Unexpected error:", err);
+        setStatus("An unexpected error occurred. Please try again.");
       }
     };
+
     initSession();
   }, []);
 
