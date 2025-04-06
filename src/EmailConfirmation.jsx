@@ -13,9 +13,8 @@ function EmailConfirmation() {
     } else {
       setStatus('🎉 Your email has been confirmed successfully!');
       // Redirect after 3 seconds
-      setTimeout(() => {
-        navigate('/');
-      }, 3000);
+      
+  
     }
   }, [searchParams, navigate]);
 
@@ -32,6 +31,9 @@ function EmailConfirmation() {
     }}>
       <h1 style={{ marginBottom: '1rem', color: '#007aff' }}>Email Confirmed</h1>
       <p style={{ marginBottom: '1rem' }}>{status}</p>
+      <button onClick={() => navigate('/')} style={{ marginTop: '1rem', padding: '0.5rem 1rem', backgroundColor: '#007aff', color: '#fff', borderRadius: '4px' }}>
+        Go to Homepage
+      </button>
     </div>
   );
 }
