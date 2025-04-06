@@ -15,29 +15,33 @@ function App() {
   const [journals, setJournals] = useState([]);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    const fetchSessionAndJournals = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
-    });
+
+      if (session) {
+        fetchJournals(session.user.id); // Pass the user ID to fetchJournals
+      }
+    };
+
+    fetchSessionAndJournals();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) {
+        fetchJournals(session.user.id); // Fetch journals when session changes
+      }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (session) {
-      fetchJournals();
-    }
-  }, [session]);
-
-  const fetchJournals = async () => {
+  const fetchJournals = async (userId) => {
     try {
       const { data, error } = await supabase
         .from('journals')
         .select('*')
-        .eq('user_id', session.user.id)
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
