@@ -11,6 +11,7 @@ const supabase = createClient(
 function ResetPasswordConfirmation() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState('');
+  const [sessionVerified, setSessionVerified] = useState(false); // Track if session is verified
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -29,6 +30,8 @@ function ResetPasswordConfirmation() {
       if (error) {
         console.error("Error exchanging code for session:", error);
         setStatus("Failed to verify reset link. Please try again.");
+      } else {
+        setSessionVerified(true); // Session is verified
       }
     };
     initSession();
@@ -50,16 +53,20 @@ function ResetPasswordConfirmation() {
     <div>
       <h1>Reset Your Password</h1>
       {status && <p>{status}</p>}
-      <form onSubmit={handleSubmit}>
-        <input
-          type="password"
-          placeholder="New password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Set New Password</button>
-      </form>
+      {sessionVerified ? (
+        <form onSubmit={handleSubmit}>
+          <input
+            type="password"
+            placeholder="New password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button type="submit">Set New Password</button>
+        </form>
+      ) : (
+        <p>Verifying your reset link...</p>
+      )}
     </div>
   );
 }
