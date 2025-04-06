@@ -9,7 +9,7 @@ import { motion } from "framer-motion";
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8'
 const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co"
 const supabase = createClient(supabaseUrl, supabaseKey)
-
+console.log(import.meta.env.VITE_SUPABASE_ANON_URL);
 function App() {
   const [session, setSession] = useState();
   const [journals, setJournals] = useState([]);
