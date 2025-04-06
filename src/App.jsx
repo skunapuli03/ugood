@@ -147,8 +147,8 @@ function App() {
             <div className="how-it-works-card">
               <div className="icon-placeholder">💬</div>
               <h4>Reflective Conversations</h4>
-              <p>Chat with AI-generated versions of your past self.</p>
-              <h4>*currently in the works*</h4>
+              <p>Chat with AI-generated versions of your past self(currently in the works).</p>
+              
             </div>
 
             {/* 3rd column */}
