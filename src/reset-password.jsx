@@ -27,12 +27,12 @@ function ResetPasswordConfirmation() {
         return;
       }
 
-      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      const { error } = await supabase.auth.exchangeCodeForSession(window.location.search);
       if (error) {
         console.error("Error exchanging code for session:", error);
         setStatus("Failed to verify reset link. Please try again.");
       } else {
-        setSessionVerified(true); // Session is verified
+        setSessionVerified(false); // Session is verified
       }
     };
     initSession();
