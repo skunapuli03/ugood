@@ -74,9 +74,7 @@ function App() {
                     <li>Set goals for tomorrow and plan how to achieve them.</li>
                   </ul>
                   <p>Remember, journaling is a personal journey. There are no right or wrong entries. Just write what feels right for you.</p>
-                  <Link to="/entry" state={{ session }} className="new-entry-btn">
-                    Start Your First Entry ➡️
-                  </Link>
+                  
                 </div>
               ) : (
             

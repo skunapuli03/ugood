@@ -12,6 +12,7 @@ function ResetPasswordConfirmation() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState('');
   const [sessionVerified, setSessionVerified] = useState(false); // Track if session is verified
+  const [isPasswordReset, setIsPasswordReset] = useState(false); // Track if password reset is in progress
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,6 +44,7 @@ function ResetPasswordConfirmation() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       setStatus('🎉 Password updated! Redirecting...');
+      setIsPasswordReset(true); // Mark password reset as complete
       setTimeout(() => navigate('/'), 3000);
     } catch (err) {
       setStatus(`😔 ${err.message}`);
@@ -53,7 +55,7 @@ function ResetPasswordConfirmation() {
     <div>
       <h1>Reset Your Password</h1>
       {status && <p>{status}</p>}
-      {sessionVerified ? (
+      {sessionVerified && !isPasswordReset ? (
         <form onSubmit={handleSubmit}>
           <input
             type="password"
@@ -64,6 +66,8 @@ function ResetPasswordConfirmation() {
           />
           <button type="submit">Set New Password</button>
         </form>
+      ) : sessionVerified && isPasswordReset ? (
+        <p>Password reset successfully! Redirecting...</p>
       ) : (
         <p>Verifying your reset link...</p>
       )}
