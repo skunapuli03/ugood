@@ -3,7 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase setup
-const supabase = createClient("https://ggksgziwgftlyfngtolu.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8");
+const supabase = createClient(
+  "https://ggksgziwgftlyfngtolu.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8"
+);
 
 function ResetPasswordConfirmation() {
   const [password, setPassword] = useState('');
@@ -12,8 +15,21 @@ function ResetPasswordConfirmation() {
 
   useEffect(() => {
     const initSession = async () => {
-      const { error } = await supabase.auth.exchangeCodeForSession();//this gets the ession from teh url
-      if (error) console.error("Error getting session from URL:", error);
+      const params = new URLSearchParams(window.location.search);
+      const type = params.get('type');
+      const code = params.get('code');
+
+      if (type !== 'recovery' || !code) {
+        console.error("Invalid or missing reset link parameters.");
+        setStatus("Invalid or expired reset link. Please request a new password reset.");
+        return;
+      }
+
+      const { error } = await supabase.auth.exchangeCodeForSession(window.location.href);
+      if (error) {
+        console.error("Error exchanging code for session:", error);
+        setStatus("Failed to verify reset link. Please try again.");
+      }
     };
     initSession();
   }, []);
@@ -35,7 +51,7 @@ function ResetPasswordConfirmation() {
       <h1>Reset Your Password</h1>
       {status && <p>{status}</p>}
       <form onSubmit={handleSubmit}>
-        <input 
+        <input
           type="password"
           placeholder="New password"
           value={password}
