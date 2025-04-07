@@ -19,7 +19,7 @@ function EmailConfirmation() {
     const { data, error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        shouldCreateUser: false, // Set to false if you don't want to create a new user
+        shouldCreateUser: true, // Allow sign-up
       },
     });
 
@@ -39,7 +39,7 @@ function EmailConfirmation() {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token: otp,
-      type: 'email', // Specify the type as 'email' for email OTP
+      type: 'signup', // Specify the type as 'signup' for sign-up OTP OTP
     });
 
     if (error) {
@@ -47,7 +47,7 @@ function EmailConfirmation() {
       setStatus(`Error: ${error.message}`);
     } else {
       console.log('OTP verified successfully:', data);
-      setStatus('🎉 Email verified successfully!');
+      setStatus('🎉 Sign-up and email verification successful!');
     }
   };
 
@@ -62,7 +62,7 @@ function EmailConfirmation() {
       fontFamily: 'Inter, sans-serif',
       backgroundColor: '#fff'
     }}>
-      <h1 style={{ marginBottom: '1rem', color: '#007aff' }}>Email Confirmation</h1>
+      <h1 style={{ marginBottom: '1rem', color: '#007aff' }}>Sign-Up Confirmation</h1>
       <p style={{ marginBottom: '1rem' }}>{status}</p>
 
       {step === 1 && (
