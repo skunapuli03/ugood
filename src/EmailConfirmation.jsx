@@ -31,7 +31,7 @@ function EmailConfirmation() {
         const { error } = await supabase.auth.verifyOtp({
           type: 'signup',
           token: accessToken,
-          email,
+          email: searchParams.get('email'),
         });
 
         if (error) {
