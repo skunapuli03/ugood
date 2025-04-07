@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 // Supabase setup
@@ -9,55 +8,48 @@ const supabase = createClient(
 );
 
 function EmailConfirmation() {
-  const [status, setStatus] = useState('Verifying your email...');
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
+  const [email, setEmail] = useState('');
+  const [otp, setOtp] = useState('');
+  const [status, setStatus] = useState('');
+  const [step, setStep] = useState(1); // Step 1: Send OTP, Step 2: Verify OTP
 
-  useEffect(() => {
-    const verifyEmail = async () => {
-      const type = searchParams.get('type');
-      const accessToken = searchParams.get('access_token');
+  // Function to send OTP
+  const sendOtp = async () => {
+    setStatus('Sending OTP...');
+    const { data, error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false, // Set to false if you don't want to create a new user
+      },
+    });
 
-      console.log('Type:', type); // Debugging log
-      console.log('Access Token:', accessToken); // Debugging log
+    if (error) {
+      console.error('Error sending OTP:', error.message);
+      setStatus(`Error: ${error.message}`);
+    } else {
+      console.log('OTP sent successfully:', data);
+      setStatus('OTP sent successfully. Please check your email.');
+      setStep(2); // Move to Step 2: Verify OTP
+    }
+  };
 
-      if (type !== 'signup' || !accessToken) {
-        setStatus('Invalid or missing confirmation link. Redirecting...');
-        setTimeout(() => navigate('/'), 10000);
-        return;
-      }
+  // Function to verify OTP
+  const verifyOtp = async () => {
+    setStatus('Verifying OTP...');
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token: otp,
+      type: 'email', // Specify the type as 'email' for email OTP
+    });
 
-      try {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        if (sessionError || !sessionData?.session?.user?.email) {
-          console.error('Error retrieving session:', sessionError);
-          setStatus('Failed to retrieve user session. Please try again.');
-          return;
-        }
-
-        const email = sessionData.session.user.email;
-
-        const { error } = await supabase.auth.verifyOtp({
-          type: 'signup',
-          token: accessToken,
-          email,
-        });
-
-        if (error) {
-          console.error('Error verifying email:', error.message);
-          setStatus('Failed to verify email. Please try again.');
-        } else {
-          setStatus('🎉 Your email has been confirmed successfully!');
-          setTimeout(() => navigate('/auth'), 3000); // Redirect to login page after 3 seconds
-        }
-      } catch (err) {
-        console.error('Unexpected error:', err);
-        setStatus('An unexpected error occurred. Please try again.');
-      }
-    };
-
-    verifyEmail();
-  }, [searchParams, navigate]);
+    if (error) {
+      console.error('Error verifying OTP:', error.message);
+      setStatus(`Error: ${error.message}`);
+    } else {
+      console.log('OTP verified successfully:', data);
+      setStatus('🎉 Email verified successfully!');
+    }
+  };
 
   return (
     <div style={{
@@ -65,23 +57,75 @@ function EmailConfirmation() {
       margin: '4rem auto',
       padding: '2rem',
       borderRadius: '8px',
+      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+      textAlign: 'center',
+      fontFamily: 'Inter, sans-serif',
+      backgroundColor: '#fff'
     }}>
       <h1 style={{ marginBottom: '1rem', color: '#007aff' }}>Email Confirmation</h1>
       <p style={{ marginBottom: '1rem' }}>{status}</p>
-      <button
-        onClick={() => navigate('/')}
-        style={{
-          marginTop: '1rem',
-          padding: '0.5rem 1rem',
-          backgroundColor: '#007aff',
-          color: '#fff',
-          borderRadius: '4px',
-          border: 'none',
-          cursor: 'pointer'
-        }}
-      >
-        Go to Homepage
-      </button>
+
+      {step === 1 && (
+        <>
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              marginBottom: '1rem',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+            }}
+          />
+          <button
+            onClick={sendOtp}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#007aff',
+              color: '#fff',
+              borderRadius: '4px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Send OTP
+          </button>
+        </>
+      )}
+
+      {step === 2 && (
+        <>
+          <input
+            type="text"
+            placeholder="Enter the OTP"
+            value={otp}
+            onChange={(e) => setOtp(e.target.value)}
+            style={{
+              width: '100%',
+              padding: '0.5rem',
+              marginBottom: '1rem',
+              borderRadius: '4px',
+              border: '1px solid #ccc',
+            }}
+          />
+          <button
+            onClick={verifyOtp}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#007aff',
+              color: '#fff',
+              borderRadius: '4px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
+          >
+            Verify OTP
+          </button>
+        </>
+      )}
     </div>
   );
 }
