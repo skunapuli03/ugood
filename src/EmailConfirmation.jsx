@@ -31,13 +31,13 @@ function EmailConfirmation() {
         const { error } = await supabase.auth.verifyOtp({
           type: 'signup',
           token: accessToken,
+          email,
         });
 
         if (error) {
           console.error('Error verifying email:', error.message);
           setStatus('Failed to verify email. Please try again.');
         } else {
-          console.log('Email verified successfully'); // Debugging log
           setStatus('🎉 Your email has been confirmed successfully!');
           setTimeout(() => navigate('/auth'), 3000); // Redirect to login page after 3 seconds
         }
