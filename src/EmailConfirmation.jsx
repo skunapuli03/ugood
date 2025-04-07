@@ -28,10 +28,19 @@ function EmailConfirmation() {
       }
 
       try {
+        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError || !sessionData?.session?.user?.email) {
+          console.error('Error retrieving session:', sessionError);
+          setStatus('Failed to retrieve user session. Please try again.');
+          return;
+        }
+
+        const email = sessionData.session.user.email;
+
         const { error } = await supabase.auth.verifyOtp({
           type: 'signup',
           token: accessToken,
-          email: searchParams.get('email'),
+          email,
         });
 
         if (error) {
