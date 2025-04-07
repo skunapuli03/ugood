@@ -23,7 +23,7 @@ function EmailConfirmation() {
 
       if (type !== 'signup' || !accessToken) {
         setStatus('Invalid or missing confirmation link. Redirecting...');
-        navigate('/auth'); // Redirect to login page
+        setTimeout(() => navigate('/'), 10000);
         return;
       }
 
@@ -56,10 +56,6 @@ function EmailConfirmation() {
       margin: '4rem auto',
       padding: '2rem',
       borderRadius: '8px',
-      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-      textAlign: 'center',
-      fontFamily: 'Inter, sans-serif',
-      backgroundColor: '#fff'
     }}>
       <h1 style={{ marginBottom: '1rem', color: '#007aff' }}>Email Confirmation</h1>
       <p style={{ marginBottom: '1rem' }}>{status}</p>
