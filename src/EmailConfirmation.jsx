@@ -23,7 +23,7 @@ function EmailConfirmation() {
 
       if (type !== 'signup' || !accessToken) {
         setStatus('Invalid or missing confirmation link. Redirecting...');
-        setTimeout(() => navigate('/'), 3000);
+        navigate('/auth'); // Redirect to login page
         return;
       }
 
