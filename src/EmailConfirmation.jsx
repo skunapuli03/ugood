@@ -125,7 +125,7 @@ function EmailConfirmation() {
             Verify OTP
           </button>
         </>
-      )}
+      )} 
     </div>
   );
 }
