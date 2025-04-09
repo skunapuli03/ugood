@@ -39,7 +39,7 @@ function EmailConfirmation() {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token: otp,
-      type: 'signup', // Specify the type as 'signup' for sign-up OTP OTP
+      type: 'signup', // Specify the type as 'signup' for sign-up OTP
     });
 
     if (error) {
