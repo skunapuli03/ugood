@@ -11,8 +11,7 @@ const supabase = createClient(
 function ResetPasswordConfirmation() {
   const [password, setPassword] = useState('');
   const [status, setStatus] = useState('Verifying your reset link...');
-  const [sessionVerified, setSessionVerified] = useState(false); // Track if session is verified
-  const [isPasswordReset, setIsPasswordReset] = useState(false); // Track if password reset is in progress
+  const [sessionVerified, setSessionVerified] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -33,8 +32,8 @@ function ResetPasswordConfirmation() {
           console.error("Error exchanging code for session:", error);
           setStatus("Failed to verify reset link. Please try again.");
         } else {
-          setSessionVerified(true); // Session is verified
-          setStatus(''); // Clear the status message
+          setSessionVerified(true);
+          setStatus('');
         }
       } catch (err) {
         console.error("Unexpected error:", err);
@@ -51,7 +50,6 @@ function ResetPasswordConfirmation() {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
       setStatus('🎉 Password updated! Redirecting...');
-      setIsPasswordReset(true); // Mark password reset as complete
       setTimeout(() => navigate('/'), 3000);
     } catch (err) {
       setStatus(`😔 ${err.message}`);
@@ -62,7 +60,7 @@ function ResetPasswordConfirmation() {
     <div>
       <h1>Reset Your Password</h1>
       {status && <p>{status}</p>}
-      {sessionVerified && !isPasswordReset ? (
+      {sessionVerified ? (
         <form onSubmit={handleSubmit}>
           <input
             type="password"
@@ -73,8 +71,6 @@ function ResetPasswordConfirmation() {
           />
           <button type="submit">Set New Password</button>
         </form>
-      ) : sessionVerified && isPasswordReset ? (
-        <p>Password reset successfully! Redirecting...</p>
       ) : (
         <p>Verifying your reset link...</p>
       )}

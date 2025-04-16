@@ -11,6 +11,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co"
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+
 function AuthPage() {
   const [session, setSession] = useState(null);
   const [journals, setJournals] = useState([]);

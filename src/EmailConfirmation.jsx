@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 
 // Supabase setup
 const supabase = createClient(
@@ -12,6 +13,17 @@ function EmailConfirmation() {
   const [otp, setOtp] = useState('');
   const [status, setStatus] = useState('');
   const [step, setStep] = useState(1); // Step 1: Send OTP, Step 2: Verify OTP
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // Extract email from query parameters if available
+    const emailFromParams = searchParams.get('email');
+    if (emailFromParams) {
+      setEmail(emailFromParams);
+      setStep(2); // Skip to OTP entry if email is provided
+    }
+  }, [searchParams]);
 
   // Function to send OTP
   const sendOtp = async () => {
@@ -48,6 +60,9 @@ function EmailConfirmation() {
     } else {
       console.log('OTP verified successfully:', data);
       setStatus('🎉 Sign-up and email verification successful!');
+      setTimeout(() => {
+        window.close(); // Close the page after success
+      }, 3000);
     }
   };
 
@@ -62,7 +77,7 @@ function EmailConfirmation() {
       fontFamily: 'Inter, sans-serif',
       backgroundColor: '#fff'
     }}>
-      <h1 style={{ marginBottom: '1rem', color: '#007aff' }}>Sign-Up Confirmation</h1>
+      <h1 style={{ marginBottom: '1rem', color: '#007aff' }}>Email Confirmation</h1>
       <p style={{ marginBottom: '1rem' }}>{status}</p>
 
       {step === 1 && (
@@ -98,6 +113,7 @@ function EmailConfirmation() {
 
       {step === 2 && (
         <>
+          <p>Please enter the OTP sent to your email: <strong>{email}</strong></p>
           <input
             type="text"
             placeholder="Enter the OTP"
@@ -125,7 +141,7 @@ function EmailConfirmation() {
             Verify OTP
           </button>
         </>
-      )} 
+      )}
     </div>
   );
 }
