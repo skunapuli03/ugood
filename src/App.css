@@ -1,13 +1,18 @@
 /* styling for front-end of journal entry */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
-
+.landing-page{
+  margin-top: 30px;
+  justify-content: center;
+}
 .landing-content{
   font-family: 'Inter', sans-serif; /* Now your entire site uses Inter */
   color: #333;
   text-align: center;
-  margin-top: 2rem;
-  line-height: 1.6;
+  margin-top: 20px;
+  margin-left: 30px;
+  align-content: center;
+  display: flexbox;
 }
 .landing-content-top{
   text-align: center;
@@ -20,6 +25,7 @@
   color: #555;
   font-size: 1.1rem;
   font-weight: normal;
+  padding: 20px;
   
 }
 .landing-try-ugood {
@@ -243,4 +249,128 @@
 
 .new-entry-btn:hover {
   background: #0056b3;
+}
+
+/*styling for the no journals page*/
+.no-journals {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 2rem;
+}
+
+.welcome-card {
+  background: white;
+  border-radius: 16px;
+  padding: 2.5rem;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+}
+
+.welcome-title {
+  font-size: 2.5rem;
+  color: #007aff;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+
+.welcome-message {
+  font-size: 1.2rem;
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+}
+
+.tips-section {
+  margin: 2rem 0;
+}
+
+.tips-section h4 {
+  font-size: 1.4rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+}
+
+.tips-grid {
+  display: flex;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin: 2rem 0;
+}
+
+.tip-card {
+  background: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid #e9ecef;
+  transition: all 0.3s ease;
+}
+
+.tip-emoji {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.tip-card p {
+  color: #495057;
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.inspiration-quote {
+  font-size: 1.2rem;
+  color: #6c757d;
+  font-style: italic;
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border-left: 4px solid #007aff;
+  background: #f8f9fa;
+  border-radius: 0 8px 8px 0;
+}
+
+.start-button-container {
+  text-align: center;
+  margin-top: 2rem;
+}
+
+.start-journey-btn {
+  display: inline-block;
+  background: #007aff;
+  color: white;
+  padding: 1rem 2.5rem;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.2);
+}
+
+.start-journey-btn:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 122, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .no-journals {
+    padding: 1rem;
+  }
+  
+  .welcome-card {
+    padding: 1.5rem;
+  }
+  
+  .welcome-title {
+    font-size: 2rem;
+  }
+  
+  .tips-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .inspiration-quote {
+    font-size: 1.1rem;
+    padding: 1rem;
+  }
 }

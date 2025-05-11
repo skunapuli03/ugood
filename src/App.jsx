@@ -64,26 +64,91 @@ function App() {
           // Show dashboard for logged-in users
           <main className="dashboard-layout">
             <div className="journals-container">
-              <div className="journal-header">
-                <h2 className="journal-header-text">Your Journals</h2>
-                <div className="journals-actions">
-                  <Link to="/entry" state={{ session }} className="new-entry-btn">
-                    Write New Entry ✍️
-                  </Link>
-                </div>
-              </div>
               {journals.length === 0 ? (
-                <div className="no-journals">
-                  <h3>Welcome to UGood!</h3>
-                  <p>Start your journaling journey today. Writing your thoughts and reflections can help you grow and improve every day.</p>
-                  <p>Here are some tips to get started:</p>
-                  <ul>
-                    <li>Write about your day and how you felt.</li>
-                    <li>Reflect on any challenges you faced and how you overcame them.</li>
-                    <li>Set goals for tomorrow and plan how to achieve them.</li>
-                  </ul>
-                  <p>Remember, journaling is a personal journey. There are no right or wrong entries. Just write what feels right for you.</p>
-                </div>
+                <motion.div 
+                  className="no-journals"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.6 }}
+                >
+                  <motion.div 
+                    className="welcome-card"
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ type: "spring", stiffness: 300 }}
+                  >
+                    <motion.h3 
+                      className="welcome-title"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.2 }}
+                    >
+                      ✨ Welcome to UGood!
+                    </motion.h3>
+                    
+                    <motion.p 
+                      className="welcome-message"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.4 }}
+                    >
+                      Start your journaling journey today. Writing your thoughts and reflections can help you grow and improve every day.
+                    </motion.p>
+
+                    <motion.div 
+                      className="tips-section"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.6 }}
+                    >
+                      <h4>Here are some tips to get started:</h4>
+                      <div className="tips-grid">
+                        <motion.div 
+                          className="tip-card"
+                          whileHover={{ scale: 1.05, backgroundColor: '#f0f7ff' }}
+                        >
+                          <span className="tip-emoji">📝</span>
+                          <p>Write about your day and how you felt</p>
+                        </motion.div>
+
+                        <motion.div 
+                          className="tip-card"
+                          whileHover={{ scale: 1.05, backgroundColor: '#f0f7ff' }}
+                        >
+                          <span className="tip-emoji">💪</span>
+                          <p>Reflect on challenges you faced and how you overcame them</p>
+                        </motion.div>
+
+                        <motion.div 
+                          className="tip-card"
+                          whileHover={{ scale: 1.05, backgroundColor: '#f0f7ff' }}
+                        >
+                          <span className="tip-emoji">🎯</span>
+                          <p>Set goals for tomorrow and plan how to achieve them</p>
+                        </motion.div>
+                      </div>
+                    </motion.div>
+
+                    <motion.p 
+                      className="inspiration-quote"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.8 }}
+                    >
+                      "Remember, journaling is a personal journey. There are no right or wrong entries. Just write what feels right for you." ✨
+                    </motion.p>
+
+                    <motion.div
+                      className="start-button-container"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 1 }}
+                    >
+                      <Link to="/entry" className="start-journey-btn">
+                        Start Your Journey ✍️
+                      </Link>
+                    </motion.div>
+                  </motion.div>
+                </motion.div>
               ) : (
                 <div className="journals-list">
                   {journals?.map(journal => (
@@ -110,7 +175,7 @@ function App() {
           </main>
         ) : (
           // Show landing page for non-logged-in users
-          <>
+          <div className="landing-page">
             <div className="landing-content">
               <div className="landing-content-top">
                 <h1 className="slogan">
@@ -162,7 +227,7 @@ function App() {
                 </div>
               </div>
             </div>
-          </>
+          </div>
         )}
       </div>
       <Analytics />
