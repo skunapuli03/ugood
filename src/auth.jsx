@@ -50,24 +50,25 @@ function AuthPage() {
 
   if (!session) {
     return (
-      <div className="auth-container">
-        <Auth 
-  supabaseClient={supabase} 
-  appearance={{
-    theme: ThemeSupa,
-    variables: {
-      default: {
-        colors: {
-          brand: '#2563EB',        // Blue
-          brandAccent: '#1D4ED8', // Darker blue on hover
-        },
-      },
-    },
-  }} 
-  providers={[]}
-/>
-
-      </div>
+      <><Navbar session={session} />
+        
+          <div className="auth-container">
+            <Auth
+              supabaseClient={supabase}
+              appearance={{
+                theme: ThemeSupa,
+                variables: {
+                  default: {
+                    colors: {
+                      brand: '#2563EB',
+                      brandAccent: '#1D4ED8',
+                    },
+                  },
+                },
+              }}
+              providers={[]/*need to add gmail access*/} /> 
+          </div>
+      </>
     );
   } else {
     return (

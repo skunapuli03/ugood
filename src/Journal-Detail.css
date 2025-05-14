@@ -1,94 +1,117 @@
-/* Reset and Global Styles */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+:root {
+  --navbar-height: 64px; /* Adjust this to match your navbar height */
 }
 
-html, body {
-  width: 100%;
-  height: 100%;
-  font-family: 'Inter', sans-serif;
-  background-color: #f5faff;
+.journal-details {
+  padding-top: var(--navbar-height); /* This fixes the gap */
+  min-height: calc(100vh - var(--navbar-height));
+  background: transparent;
 }
 
-/* Journal Detail Page Using Full Width/Height */
-.journal-detail-page {
-  width: 100%;
-  min-height: 100%;
-  padding: 2rem;
+.journal-detail-header-row{
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding-top: 80px; /* Add padding to account for the fixed navbar */
+  padding: 20px;
+  gap: 10px;
 }
 
-/* Header Styling */
-.journal-detail-header {
-  width: 100%;
+.header-content {
   max-width: 1200px;
+  margin: 0 auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
 }
 
-.back-button {
-  color: #007aff;
-  font-size: 1.2rem;
-  transition: color 0.2s ease;
-  z-index: 1000;
-}
-
-.back-button:hover {
-  color: #0056b3;
+.header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
 .journal-date {
-  color: #666;
-  font-size: 1.1rem;
-}
-
-.journal-detail-content {
-  width: 100%;
-  max-width: 1200px;
-  background-color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  font-size: 0.9rem;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .feeling-indicator {
-  background: #e3f2fd;
-  color: #007aff;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  display: inline-block;
-  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 12px;
+  background: #f1f5f9;
+  color: #334155;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.2s ease;
 }
 
-.journal-entry, 
-.journal-reflection {
-  margin-bottom: 2rem;
+.back-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #0062ff;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.back-button:hover {
+  background: #f1f5f9;
+  transform: translateX(-4px);
+}
+
+
+
+@media (max-width: 768px) {
+  .journal-detail-header {
+    padding: 1rem;
+    margin: 1rem;
+  }
+
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .back-button {
+    width: 100%;
+    justify-content: center;
+    background: #f1f5f9;
+  }
+}
+
+.journal-detail-header-row {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  gap: 10px;
+}
+
+.journal-content {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap; /* Allows it to wrap on small screens */
+}
+
+.journal-entry, .journal-reflection {
+  flex: 1;
+  min-width: 300px;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 .journal-entry h2,
 .journal-reflection h2 {
-  font-size: 1.5rem;
-  color: #007aff;
-  margin-bottom: 1rem;
-}
-
-.journal-entry p,
-.journal-reflection p {
-  font-size: 1.1rem;
-  color: #333;
-  line-height: 1.6;
-}
-
-/* Reflection Section Specific Styling */
-.journal-reflection {
-  background: #f8f9fa;
-  padding: 2rem;
-  border-radius: 12px;
+  margin-top: 0;
+  font-size: 1.4rem;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 8px;
 }

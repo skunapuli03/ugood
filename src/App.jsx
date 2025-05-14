@@ -14,6 +14,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 function App() {
   const [session, setSession] = useState(null);
   const [journals, setJournals] = useState([]);
+  const [userCount, setUserCount] = useState(0);
 
   useEffect(() => {
     const fetchSessionAndJournals = async () => {
@@ -41,6 +42,17 @@ function App() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const fetchUserCount = async () => {
+      // Count distinct user_ids from journals table
+      const { data, error, count } = await supabase
+        .from('journals')
+        .select('user_id', { count: 'exact', head: true });
+      if (!error) setUserCount(count || 0);
+    };
+    fetchUserCount();
+  }, []);
+
   const fetchJournals = async (userId) => {
     try {
       const { data, error } = await supabase
@@ -59,7 +71,6 @@ function App() {
   return (
     <>
       <Navbar session={session} />
-      <div className="app-content">
         {session ? (
           // Show dashboard for logged-in users
           <main className="dashboard-layout">
@@ -152,26 +163,47 @@ function App() {
               ) : (
                 <div className="journals-list">
                   {journals?.map(journal => (
-                    <motion.div
-                      key={journal.id}
-                      className="journal-card"
-                    >
-                      <p className="journal-preview">
-                        {journal.content.substring(0, 90)}...
-                      </p>
-                      {journal.reflection && (
-                        <div className="lesson-preview">
-                          <p>{journal.reflection.substring(0, 75)}...</p>
-                        </div>
-                      )}
-                      <Link to={`/journal/${journal.id}`} className="read-more-link">
-                        Read More ➡️
-                      </Link>
-                    </motion.div>
+                    <Link to={`/journal/${journal.id}`} style={{ textDecoration: "none" }}>
+                      <motion.div
+                        key={journal.id}
+                        className="journal-card"
+                        whileHover={{ scale: 1.03, boxShadow: "0 4px 24px rgba(0,0,0,0.08)" }}
+                        whileTap={{ scale: 0.98 }}
+                        transition={{ type: "spring", stiffness: 300 }}
+                      >
+                        <p className="journal-preview">
+                          {journal.content.substring(0, 90)}...
+                        </p>
+                        {journal.reflection && (
+                          <div className="lesson-preview">
+                            <p>{journal.reflection.substring(0, 75)}...</p>
+                          </div>
+                        )}
+                        <span className="read-more-link">Read More ➡️</span>
+                      </motion.div>
+                    </Link>
                   ))}
                 </div>
               )}
             </div>
+            <Link to="/entry" className="add-journal-btn">
+              <motion.button
+                className="add-journal-button"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                
+              </motion.button>
+            </Link>
+            <Link to="/entry" className="floating-add-btn" title="New Entry">
+              <motion.button
+                className="floating-add-btn-inner"
+                whileHover={{ scale: 1.12 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                +
+              </motion.button>
+            </Link>
           </main>
         ) : (
           // Show landing page for non-logged-in users
@@ -188,14 +220,24 @@ function App() {
                   thoughts into actionable insights. <br />
                   Embrace a two-way conversation that helps you grow every day.
                 </h2>
+                <p className="user-count-cta">
+                  🌟 There are currently <motion.span className="user-count"
+                  initial={{ scale: 0.8, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ ease: "easeInOut", duration: 0.5, type: "spring", stiffness: 50 }}
+                >
+                   3</motion.span> people journaling their way to growth!</p>
                 <div className="onboard-buttons">
                   <Link to="/auth" state={journals}>
-                    <button className="landing-try-ugood">
+                    <motion.button className="landing-try-ugood" 
+                    whileHover={{ scale: 1.05 }} 
+                    whileTap={{ scale: 0.95 }}>
                       Start Journaling Now ➡️
-                    </button>
+                    </motion.button>
                   </Link>
                   <Link to="/about">
-                    <button className="landing-learn-more">Learn More</button>
+                    <motion.button className="landing-learn-more" whileHover={{ scale: 1.05 }} 
+                    whileTap={{ scale: 0.95 }}>Learn More</motion.button>
                   </Link>
                 </div>
               </div>
@@ -229,7 +271,6 @@ function App() {
             </div>
           </div>
         )}
-      </div>
       <Analytics />
     </>
   );

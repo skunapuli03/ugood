@@ -39,32 +39,34 @@ const JournalDetail = ({ session }) => {
 
   return (
     <>
-      <Navbar session={session} />
-      <div className="journal-detail-page">           
-        <div className="journal-detail-content">
+        <div className="journal-details">
           <div className="journal-detail-header-row">
             <span className="feeling-indicator">
               Feeling: {journal.feeling}
             </span>
+            
+            <span className="journal-date">
+              Date: {new Date(journal.created_at).toLocaleDateString()}
+            </span>
+            
+          </div>
+          <div className='journal-content'>
+            <div className="journal-entry">
             <Link to="/" className="back-button">
               ← Back to Journals
             </Link>
-            <span className="journal-date">
-              {new Date(journal.created_at).toLocaleDateString()}
-            </span>
-          </div>
-          <div className="journal-entry">
-            <h2>Journal Entry</h2>
-            <p>{journal.content}</p>
-          </div>
-          {journal.reflection && (
-            <div className="journal-reflection">
-              <h2>Lesson</h2>
-              <p>{journal.reflection}</p>
+              <h2>Journal Entry</h2> 
+              <p>{journal.content}</p>
             </div>
-          )}
+            {journal.reflection && (
+              <div className="journal-reflection">
+                <h2>Lesson</h2>
+                <p>{journal.reflection}</p>
+              </div>
+            )}            
+          </div>
+
         </div>
-      </div>
     </>
   );
 };

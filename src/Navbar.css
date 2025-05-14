@@ -10,23 +10,20 @@ html, body {
     padding: 0;
     height: 100%;
     width: 100%;
-    overflow-x: hidden; /* Prevents horizontal scrollbars */
 }
 
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 40px; /* Adjust padding for your desired spacing */
-    background: white;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
+    background: transparent; 
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: none; 
     z-index: 1000;
-    height: 60px; /* Adjust this value based on your navbar height */
-    background-color: #fff; /* Adjust the background color as needed */
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .logo {
@@ -100,5 +97,21 @@ button {
 
 .sign-out:hover {
     background-color: #ff6666;
+}
+
+@media (max-width: 768px) {
+    .navbar {
+        padding: 10px 15px;
+    }
+
+    .user-controls {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    .user-email {
+        font-size: 14px;
+    }
 }
 

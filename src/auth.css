@@ -1,10 +1,17 @@
-.auth-container{
-    max-width: 400px;
-    margin: 2rem auto;
-    padding: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    background-color: #fff;
-    align-items: center;
-    margin-left: 650px;
+
+
+.auth-container {
+  max-width: 400px;
+  width: 90vw;
+  margin: 5vh auto 0 auto;
+  padding: 2rem 1.5rem;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  box-sizing: border-box;
+  min-height: 60vh;
 }
+
