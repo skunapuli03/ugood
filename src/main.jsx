@@ -13,12 +13,17 @@ import AuthPage from './auth.jsx';
 import JournalDetail from './journalDetail.jsx';
 import ResetPasswordConfirmation from './reset-password.jsx';
 import EmailConfirmation from './EmailConfirmation.jsx';
+import About from './about.jsx';
 //need to import contact after launching
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <Layout> <App /></Layout>,
+  },
+  {
+    path: "/about",
+    element: <Layout> <About /></Layout>,
   },
   {
     path: "/entry",

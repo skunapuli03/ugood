@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import './entry.css';
 import Navbar from './navbar';
 import { Link } from 'react-router-dom';
-
+import {motion, AnimatePresence} from 'framer-motion';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8';
 const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co";
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -27,6 +27,8 @@ const Entry = ({ session }) => {
   const [journalText, setJournalText] = useState('');
   const [reflection, setReflection] = useState('');
   const [loading, setLoading] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [save, setSave] = useState(false);
   const [showReflectionModal, setShowReflectionModal] = useState(false);
 
   // Re-fetch session if not provided via prop
@@ -69,6 +71,8 @@ const Entry = ({ session }) => {
           reflection: generatedReflection,
           created_at: new Date().toISOString()
         }]);
+        //this is after journal entry is saved to DB
+      setSaved(true);
 
       if (error) {
         console.error('Supabase insert error:', error);
@@ -142,13 +146,52 @@ const Entry = ({ session }) => {
           >
             View Lesson
           </button>
-          <button
+          <motion.button
             className="save-entry-btn"
             onClick={handleSaveEntry}
-            disabled={loading}
+            disabled={loading || saved}
+            animate = {{
+              backgroundColor: saved ? '#22c55e' : '#2563eb',
+              color: '#fff',
+              scale: saved ? 1.08 : 1,
+            }}
+            transition={{type: 'spring', stiffness: 100}}
           >
-            {loading ? 'Saving...' : 'Save Entry'}
-          </button>
+            <AnimatePresence mode ="wait">
+                {saved ? (
+                  <motion.span
+                    key="saved"
+                    initial={{ opacity: 0, scale: 0.7 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.7 }}
+                    transition={{ duration: 0.2 }}
+                    style={{ display: "inline-block" }}
+                  >
+                    ✔️ Saved!
+                  </motion.span>
+                ) : loading ? (
+                  <motion.span
+                    key="loading"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    Saving...
+                  </motion.span>
+                ) : ( <motion.span
+                  key="save"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  Save Entry
+                </motion.span>
+              )}
+
+            </AnimatePresence>
+          </motion.button>
         </div>
 
         {showReflectionModal && reflection && (
