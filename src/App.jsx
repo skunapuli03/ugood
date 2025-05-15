@@ -226,13 +226,13 @@ function App() {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ ease: "easeInOut", duration: 0.5, type: "spring", stiffness: 50 }}
                 >
-                   4</motion.span> people journaling their way to growth!</p>
+                   6</motion.span> people journaling their way to growth!</p>
                 <div className="onboard-buttons">
-                  <Link to="/auth" state={journals}>
+                  <Link to="/auth" state={journals/*this needs to lead to a demo version */}>
                     <motion.button className="landing-try-ugood" 
-                    whileHover={{ scale: 1.05 }} 
-                    whileTap={{ scale: 0.95 }}>
-                      Start Journaling Now ➡️
+                      whileHover={{ scale: 1.05 }} 
+                      whileTap={{ scale: 0.95 }}>
+                        Start Journaling Now ➡️
                     </motion.button>
                   </Link>
                   <Link to="/about">
