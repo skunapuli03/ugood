@@ -214,7 +214,7 @@ function App() {
                   Journal your way to a Better You.
                 </h1>
                 <h2 className="description">
-                  Discover the power of interactive journaling—where your
+                  Discover the power of interactive journaling. Where your
                   past self guides your future growth. <br />
                   Write, reflect, and learn in real time as you transform your
                   thoughts into actionable insights. <br />
