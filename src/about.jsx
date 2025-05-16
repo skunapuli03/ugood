@@ -38,15 +38,16 @@ const About = () => {
   return (
     <>
       <Navbar />
-      <div className="about-page">
-        {/* HERO SECTION */}
-        <section className="about-hero">
+      <div className="about-split">
+        {/* LEFT: Mission, Slogan, Values */}
+        <section className="about-left">
           <motion.h1
+            className="about-slogan"
             initial={{ opacity: 0, y: -40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            Welcome to <span className="ugood-gradient">UGood</span>
+            Reflect Better.<br />Grow Quicker.
           </motion.h1>
           <motion.p
             className="about-mission"
@@ -54,105 +55,80 @@ const About = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2, duration: 0.7 }}
           >
-            <strong>AI-powered journaling for real growth.</strong>  
-            <br />
-            Reflect, learn, and transform your life—one entry at a time.
+            <strong>Our Mission:</strong> Empower everyone to unlock their best self through guided reflection, instant insights, and a supportive digital space.
           </motion.p>
-          <motion.div
-            className="about-hero-cards"
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4, duration: 0.7 }}
-          >
-            <div className="about-hero-card">
-              <span role="img" aria-label="growth" className="about-hero-emoji">🌱</span>
-              <h3>Personal Growth</h3>
-              <p>Turn your thoughts into actionable insights with instant AI feedback.</p>
-            </div>
-            <div className="about-hero-card">
-              <span role="img" aria-label="privacy" className="about-hero-emoji">🔒</span>
-              <h3>Private & Secure</h3>
-              <p>Your entries are yours—always. We never share your data.</p>
-            </div>
-            <div className="about-hero-card">
-              <span role="img" aria-label="community" className="about-hero-emoji">🤝</span>
-              <h3>Supportive Community</h3>
-              <p>Join others on a journey of self-improvement and reflection.</p>
-            </div>
-          </motion.div>
-        </section>
-
-        {/* DEMO SECTION */}
-        <section className="about-demo">
-          <h2>✨ Try UGood’s AI Journal Demo</h2>
-          <p>
-            Experience the magic of AI-powered reflection.  
-            Write a journal entry below and get a real AI-generated lesson—no account needed!
-          </p>
-          <div className="about-demo-entry">
-            <textarea
-              className="journal-input"
-              placeholder="Try writing about your day, a challenge, or a goal..."
-              value={demoText}
-              onChange={e => setDemoText(e.target.value)}
-              rows={5}
-              maxLength={600}
-            />
-            <div className="about-demo-buttons">
-              <motion.button
-                className="save-entry-btn"
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={handleDemoSave}
-                disabled={loading || !demoText.trim()}
-              >
-                Save Entry
-              </motion.button>
+          <ul className="about-values-list">
+            <li>✨ <strong>Personal Growth:</strong> Turn thoughts into lessons with AI-powered feedback.</li>
+            <li>🔒 <strong>Privacy First:</strong> Your entries are yours.</li>
+            <li>🤖 <strong>AI Enhancement:</strong> With AI you Grow quicker, learn better.</li>
+          </ul>
+          <div className="about-cta">
+            <h3>Ready for the full experience?</h3>
+            <Link to="/auth">
               <motion.button
                 className="primary"
-                whileHover={{ scale: 1.05 }}
+                whileHover={{ scale: 1.07 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={handleDemo}
-                disabled={loading || !demoText.trim()}
               >
-                {loading ? "Generating Lesson..." : "Get Lesson"}
+                Create Your Free Account
               </motion.button>
-            </div>
-            <AnimatePresence>
-              {demoLesson && (
-                <motion.div
-                  className="about-demo-lesson"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 10 }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <h4>✨ Your AI Lesson</h4>
-                  <div>{demoLesson}</div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-          <div className="about-demo-note">
-            <span>Saving is only available for registered users.</span>
+            </Link>
           </div>
         </section>
 
-        {/* CTA SECTION */}
-        <section className="about-cta">
-          <h2>Ready for the full experience?</h2>
-          <p>
-            Create your free account to save entries, track your growth, and unlock all features.
-          </p>
-          <Link to="/auth">
-            <motion.button
-              className="primary"
-              whileHover={{ scale: 1.07 }}
-              whileTap={{ scale: 0.97 }}
-            >
-              Create Your Free Account
-            </motion.button>
-          </Link>
+        {/* RIGHT: Interactive Demo */}
+        <section className="about-right">
+          <div className="about-demo">
+            <h2>Try the UGood Demo</h2>
+            <p>
+              Write a journal entry and see your instant AI-generated lesson.<br />
+              <span className="about-demo-note">Saving is only for registered users.</span>
+            </p>
+            <div className="about-demo-entry">
+              <textarea
+                className="journal-input"
+                placeholder="Try writing about your day, a challenge, or a goal..."
+                value={demoText}
+                onChange={e => setDemoText(e.target.value)}
+                rows={5}
+                maxLength={600}
+              />
+              <div className="about-demo-buttons">
+                <motion.button
+                  className="save-entry-btn"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleDemoSave}
+                  disabled={loading || !demoText.trim()}
+                >
+                  Save Entry
+                </motion.button>
+                <motion.button
+                  className="primary"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={handleDemo}
+                  disabled={loading || !demoText.trim()}
+                >
+                  {loading ? "Generating Lesson..." : "Get Lesson"}
+                </motion.button>
+              </div>
+              <AnimatePresence>
+                {demoLesson && (
+                  <motion.div
+                    className="about-demo-lesson"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h4>✨ Your AI Lesson</h4>
+                    <div>{demoLesson}</div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
         </section>
       </div>
 
