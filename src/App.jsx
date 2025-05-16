@@ -226,7 +226,7 @@ function App() {
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ ease: "easeInOut", duration: 0.5, type: "spring", stiffness: 50 }}
                 >
-                   6</motion.span> people journaling their way to growth!</p>
+                   7</motion.span> people journaling their way to growth!</p>
                 <div className="onboard-buttons">
                   <Link to="/auth" state={journals/*this needs to lead to a demo version */}>
                     <motion.button className="landing-try-ugood" 
