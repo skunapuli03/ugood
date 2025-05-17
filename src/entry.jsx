@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import './entry.css';
 import Navbar from './navbar';
@@ -30,6 +30,22 @@ const Entry = ({ session }) => {
   const [saved, setSaved] = useState(false);
   const [save, setSave] = useState(false);
   const [showReflectionModal, setShowReflectionModal] = useState(false);
+  const [toast, setToast] = useState('');
+  const [showToast, setShowToast] = useState(false);
+  const toastTimeout = useRef(null);
+  const [journalId, setJournalId] = useState(null);
+
+  const showToastMessage = (msg, duration = 4000) => {
+    setToast(msg);
+    setShowToast(true);
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+    toastTimeout.current = setTimeout(() => setShowToast(false), duration);
+  };
+
+  const handleCloseToast = () => {
+    setShowToast(false);
+    if (toastTimeout.current) clearTimeout(toastTimeout.current);
+  };
 
   // Re-fetch session if not provided via prop
   useEffect(() => {
@@ -50,38 +66,47 @@ const Entry = ({ session }) => {
       return;
     }
     setLoading(true);
-    setReflection(''); // Clear any previous reflection
+    setToast('');
+    setReflection('');
     try {
-      // Call your reflection generation API
-      const response = await fetch('https://ugood-3osi.onrender.com/generate-reflections', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ journalEntry: journalText })
-      });
-      const data = await response.json();
-      const generatedReflection = data?.reflection || '';
-
-      // Save entry to Supabase
-      const { error } = await supabase
+      // 1. Save journal entry immediately (reflection empty)
+      const { data, error } = await supabase
         .from('journals')
         .insert([{
           user_id: localSession.user.id,
           feeling: feeling,
           content: journalText,
-          reflection: generatedReflection,
+          reflection: '', // Empty for now
           created_at: new Date().toISOString()
-        }]);
-        //this is after journal entry is saved to DB
-      setSaved(true);
+        }])
+        .select()
+        .single();
 
-      if (error) {
-        console.error('Supabase insert error:', error);
-      } else {
-        setReflection(generatedReflection);
-        console.log('Journal entry saved successfully!');
-      }
+      if (error) throw error;
+      setSaved(true);
+      setJournalId(data.id);
+      showToastMessage('Your lesson is ready to be viewed!');
+
+      // 2. Generate reflection in background
+      const response = await fetch('https://ugood-3osi.onrender.com/generate-reflections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ journalEntry: journalText })
+      });
+      const result = await response.json();
+      const generatedReflection = result?.reflection || '';
+
+      // 3. Update journal entry with reflection
+      await supabase
+        .from('journals')
+        .update({ reflection: generatedReflection })
+        .eq('id', data.id);
+
+      setReflection(generatedReflection);
+      showToastMessage('Your lesson is ready!');
     } catch (err) {
-      console.error('Error saving entry:', err);
+      showToastMessage('Error saving entry or generating lesson.');
+      console.error('Error:', err);
     } finally {
       setLoading(false);
     }
@@ -193,6 +218,13 @@ const Entry = ({ session }) => {
             </AnimatePresence>
           </motion.button>
         </div>
+
+        {toast && (
+          <div className={`entry-toast${!showToast ? ' entry-toast-hide' : ''}`}>
+            <button className="entry-toast-close" onClick={handleCloseToast} aria-label="Close">&times;</button>
+            {toast}
+          </div>
+        )}
 
         {showReflectionModal && reflection && (
           <ReflectionModal

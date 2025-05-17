@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { createClient } from "@supabase/supabase-js";
 import './Navbar.css';
-
+import { motion } from "framer-motion";
 const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co";
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8'
 const supabase = createClient(supabaseUrl, supabaseKey);
@@ -31,14 +31,9 @@ const Navbar = ({ session }) => {
             console.error('Error signing out:', error.message);
         }
     };
-
-    return (
-        <nav className="navbar">
-            <Link to='/'><div className='logo'>UGood</div></Link>
-            <div className='links'>
-                {/*<Link to="/contact">Contact</Link> let's put this up after launching it*/}
-            </div>
-            <div className='auth-buttons'>
+{/* this is potential dark mode code:
+    
+    <div className='auth-buttons'>
                 <button
                     className="theme-toggle"
                     onClick={() => setDark((d) => !d)}
@@ -48,6 +43,15 @@ const Navbar = ({ session }) => {
                         {dark ? <i className="fa fa-moon"></i> : <i className="fa fa-sun"></i>}
                     </span>
                 </button>
+    </div>
+    
+    */}
+    return (
+        <nav className="navbar">
+            <Link to='/'><div className='logo'>UGood</div></Link>
+            <motion.div className='links'>
+            </motion.div>
+            
                 {session ? (
                     <div className="user-controls">
                         <span className="user-email">{session.user.email}</span>
@@ -63,8 +67,8 @@ const Navbar = ({ session }) => {
                         <button className='primary'>Sign In 📖</button>
                     </Link>
                 )}
-            </div>
-        </nav>
+            
+            </nav>
     );
 };
 

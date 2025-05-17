@@ -108,6 +108,9 @@ body {
   border: 1px solid var(--color-border);
   box-shadow: 0 2px 12px rgba(37,99,235,0.07);
   transition: background 0.3s, color 0.3s, border 0.3s;
+  padding: 1.5rem;
+  border-radius: 20px;
+  
 }
 
 /* New Entry Button Styling */

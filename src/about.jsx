@@ -81,8 +81,7 @@ const About = () => {
           <div className="about-demo">
             <h2>Try the UGood Demo</h2>
             <p>
-              Write a journal entry and see your instant AI-generated lesson.<br />
-              <span className="about-demo-note">Saving is only for registered users.</span>
+              Write a journal entry and see your instant lesson.<br />
             </p>
             <div className="about-demo-entry">
               <textarea
