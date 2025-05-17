@@ -85,7 +85,7 @@ const Entry = ({ session }) => {
       if (error) throw error;
       setSaved(true);
       setJournalId(data.id);
-      showToastMessage('Your lesson is ready to be viewed!');
+      showToastMessage('Currently coming up with your lesson!!!');
 
       // 2. Generate reflection in background
       const response = await fetch('https://ugood-3osi.onrender.com/generate-reflections', {
