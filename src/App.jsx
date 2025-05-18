@@ -179,7 +179,7 @@ function App() {
                             <p>{journal.reflection.substring(0, 75)}...</p>
                           </div>
                         )}
-                        <span className="read-more-link">Read More ➡️</span>
+                        <span className="read-more-link">Read More ➡️</span> {new Date().toLocaleDateString()}
                       </motion.div>
                     </Link>
                   ))}

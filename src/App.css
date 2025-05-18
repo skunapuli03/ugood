@@ -110,7 +110,10 @@ body {
   transition: background 0.3s, color 0.3s, border 0.3s;
   padding: 1.5rem;
   border-radius: 20px;
-  
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
 }
 
 /* New Entry Button Styling */
@@ -224,13 +227,12 @@ h1, h2, h3, h4 {
   padding: 20px;
 }
 .journals-list{
-  align-content: center;
-  max-width: 800px;
-  margin: 20px auto; /* centers the container horizontally */
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  flex-direction: column;
   gap: 20px;
+  max-width: 600px;
+  margin: 20px auto;
+  width: 100%;
 }
 .journal-preview{
   color: black;
@@ -712,6 +714,13 @@ button:hover,
     max-width: 100%;
     min-width: 0;
     width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .journals-list, .journal-card {
+    max-width: 98vw;
+    padding: 0.5rem;
   }
 }
 
