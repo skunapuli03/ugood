@@ -8,6 +8,8 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method Not Allowed' });
   }
@@ -54,3 +56,22 @@ export default async function handler(req, res) {
     res.status(500).json({ error: 'Failed to generate resources', details: err.message });
   }
 }
+
+useEffect(() => {
+  const fetchResources = async () => {
+    dispatch({ type: 'FETCH_START' });
+    try {
+      console.log("Fetching resources for user:", session?.user?.id); // Add this line
+      const res = await fetch('https://ugood-3osi.onrender.com/generate-resources', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: session?.user?.id }),
+      });
+      const data = await res.json();
+      dispatch({ type: 'FETCH_SUCCESS', payload: data });
+    } catch (error) {
+      dispatch({ type: 'FETCH_ERROR', error: 'Failed to load resources.' });
+    }
+  };
+  if (session?.user?.id) fetchResources();
+}, [session]);
