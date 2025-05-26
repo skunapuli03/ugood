@@ -62,11 +62,14 @@ useEffect(() => {
     dispatch({ type: 'FETCH_START' });
     try {
       console.log("Fetching resources for user:", session?.user?.id); // Add this line
-      const res = await fetch('https://ugood-3osi.onrender.com/generate-resources', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: session?.user?.id }),
-      });
+      const res = await fetch(
+        `https://ugood-3osi.onrender.com/generate-resources?nocache=${Date.now()}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: session?.user?.id }),
+        }
+      );
       const data = await res.json();
       dispatch({ type: 'FETCH_SUCCESS', payload: data });
     } catch (error) {

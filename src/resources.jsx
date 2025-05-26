@@ -16,6 +16,8 @@ const initialState = {
   },
 };
 
+
+console.log("we started the resources component");
 function reducer(state, action) {
   switch (action.type) {
     case 'FETCH_START':
