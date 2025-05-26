@@ -35,7 +35,7 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "/resources",
+    path: "/Resources",
     element: <Layout> <Resources/></Layout>,
   },
   {
