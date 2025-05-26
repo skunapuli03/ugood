@@ -1,5 +1,10 @@
-import React, { useReducer, useEffect } from 'react';
+import React, { useReducer, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = "https://ggksgziwgftlyfngtolu.supabase.co";
+const supabaseKey = 'YOUR_SUPABASE_KEY';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 const initialState = {
   loading: true,
@@ -24,20 +29,27 @@ function reducer(state, action) {
   }
 }
 
-function Resources({ session }) {
+function Resources() {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [session, setSession] = useState(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+  }, []);
 
   useEffect(() => {
     const fetchResources = async () => {
       dispatch({ type: 'FETCH_START' });
       try {
+        console.log("Fetching resources for user:", session?.user?.id);
         const res = await fetch('https://ugood-3osi.onrender.com/generate-resources', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: session?.user?.id }),
         });
         const data = await res.json();
-        // Expecting: { articles: [...], videos: [...], books: [...] }
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (error) {
         dispatch({ type: 'FETCH_ERROR', error: 'Failed to load resources.' });

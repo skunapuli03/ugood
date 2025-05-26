@@ -40,7 +40,7 @@ export default async function handler(req, res) {
       - 3-5 helpful books (with title and link)
       Journals and Lessons:
       ${context}
-      Respond as JSON: { "articles": [...], "videos": [...], "books": [...] }
+      Respond ONLY as valid JSON: { "articles": [...], "videos": [...], "books": [...] }
     `;
     const result = await model.generateContent(prompt);
     const text = result.response.text();
