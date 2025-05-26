@@ -221,7 +221,7 @@ function App() {
                 <div className="add-options">
                   <Link to="/entry" className="add-new-journal-option" onClick={() => dispatchUI({type: 'HIDE_ADD_OPTIONS'})}>New Journal ✍️</Link>
                   <Link to="/tasks" className="view-or-add-tasks-option" onClick={() => dispatchUI({type: 'HIDE_ADD_OPTIONS'})}>Tasks 📖</Link>
-                  <Link to="/resources" className="view-resources-option" onClick={() => dispatchUI({type: 'HIDE_ADD_OPTIONS'})}>Resources 📚</Link>
+                  <Link to="/Resources" className="view-resources-option" onClick={() => dispatchUI({type: 'HIDE_ADD_OPTIONS'})}>Resources 📚</Link>
                 </div>
             )}
               
