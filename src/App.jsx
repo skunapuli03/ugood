@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useReducer } from 'react';
 import './App.css';
 import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./navbar.jsx";
 import { createClient } from '@supabase/supabase-js';
 import { motion } from "framer-motion";
+
+
 
 // Supabase setup
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8';
@@ -15,6 +17,19 @@ function App() {
   const [session, setSession] = useState(null);
   const [journals, setJournals] = useState([]);
   const [userCount, setUserCount] = useState(0);
+  const initialState = { showAddOptions: false }; //this is to show the various options after clicking the add button
+
+  function uiReducer(state, action) {
+    switch(action.type) {
+      case 'TOGGLE_ADD_OPTIONS':
+        return { ...state, showAddOptions: !state.showAddOptions };
+      case 'HIDE_ADD_OPTIONS':
+        return { ...state, showAddOptions: false };
+      default:
+        return state;
+    }
+  }
+  const [uiState, dispatchUI] = useReducer(uiReducer, initialState);
 
   useEffect(() => {
     const fetchSessionAndJournals = async () => {
@@ -29,6 +44,7 @@ function App() {
         console.error("Error fetching session:", error);
       }
     };
+    
 
     fetchSessionAndJournals();
 
@@ -186,26 +202,31 @@ function App() {
                 </div>
               )}
             </div>
-            <Link to="/entry" className="add-journal-btn">
               <motion.button
                 className="add-journal-button"
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                
               </motion.button>
-            </Link>
-            <Link to="/entry" className="floating-add-btn" title="New Entry">
+
               <motion.button
                 className="floating-add-btn-inner"
                 whileHover={{ scale: 1.12 }}
                 whileTap={{ scale: 0.95 }}
+                onClick={() => dispatchUI({ type: 'TOGGLE_ADD_OPTIONS' })}
               >
                 +
               </motion.button>
-            </Link>
+              {uiState.showAddOptions && (
+                <div className="add-options">
+                  <Link to="/entry" className="add-new-journal-option" onClick={() => dispatchUI({type: 'HIDE_ADD_OPTIONS'})}>New Journal ✍️</Link>
+                  <Link to="/tasks" className="view-or-add-tasks-option" onClick={() => dispatchUI({type: 'HIDE_ADD_OPTIONS'})}>Tasks 📖</Link>
+                  <Link to="/resources" className="view-resources-option" onClick={() => dispatchUI({type: 'HIDE_ADD_OPTIONS'})}>Resources 📚</Link>
+                </div>
+            )}
+              
           </main>
-        ) : (
+        ) /**the top part is used to show the blue background of hte button, and the other part is the + */: (
           // Show landing page for non-logged-in users
           <div className="landing-page">
             <div className="landing-content">
