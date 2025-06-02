@@ -7,6 +7,7 @@ const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS
 const supabase = createClient(supabaseUrl, supabaseKey);
 console.log("we started the resources component");
 
+// Initial state for the reducer
 const initialState = {
   loading: true,
   error: null,
@@ -17,8 +18,7 @@ const initialState = {
   },
 };
 
-
-console.log("we started the resources component");
+// Reducer function to manage state
 function reducer(state, action) {
   switch (action.type) {
     case 'FETCH_START':
@@ -36,29 +36,40 @@ function Resources() {
   const [state, dispatch] = useReducer(reducer, initialState);
   const [session, setSession] = useState(null);
 
+  // Fetch the session from Supabase
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Session fetched:", session); // Debug log
       setSession(session);
     });
   }, []);
 
+  // Fetch resources from the backend
   useEffect(() => {
     const fetchResources = async () => {
       dispatch({ type: 'FETCH_START' });
       try {
-        console.log("Fetching resources for user:", session?.user?.id);
+        console.log("Fetching resources for user:", session?.user?.id); // Debug log
         const res = await fetch('https://ugood-3osi.onrender.com/generate-resources', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: session?.user?.id }),
         });
         const data = await res.json();
+        console.log("Resources fetched:", data); // Debug log
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (error) {
+        console.error("Error fetching resources:", error); // Debug log
         dispatch({ type: 'FETCH_ERROR', error: 'Failed to load resources.' });
       }
     };
-    if (session?.user?.id) fetchResources();
+
+    if (session?.user?.id) {
+      console.log("Session is valid, triggering fetch..."); // Debug log
+      fetchResources();
+    } else {
+      console.log("No session or user ID available."); // Debug log
+    }
   }, [session]);
 
   const { loading, error, resources } = state;
@@ -68,6 +79,9 @@ function Resources() {
       <h2>Recommended Resources</h2>
       {loading && <p>Loading resources...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
+      {!loading && !error && resources.articles.length === 0 && resources.videos.length === 0 && resources.books.length === 0 && (
+        <p>No resources found. Please add more journal entries to get recommendations.</p>
+      )}
       {!loading && !error && (
         <>
           <h3>Articles</h3>
