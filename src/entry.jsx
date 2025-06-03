@@ -52,6 +52,15 @@ const Entry = ({ session }) => {
     setLoading(true);
     setReflection(''); // Clear any previous reflection
   
+    try {
+      // Call your reflection generation API
+      const response = await fetch('https://ugood-3osi.onrender.com/generate-reflections', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ journalEntry: journalText })
+      });
+      const data = await response.json();
+      const generatedReflection = data?.reflection || '';
 
       // Save entry to Supabase
       const { error } = await supabase
@@ -65,16 +74,6 @@ const Entry = ({ session }) => {
         }]);
         //this is a the part where we save the journal entry to the database
       setSaved(true);
-
-      try {
-        // Call your reflection generation API
-        const response = await fetch('https://ugood-3osi.onrender.com/generate-reflections', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ journalEntry: journalText })
-        });
-        const data = await response.json();
-        const generatedReflection = data?.reflection || '';
 
       if (error) {
         console.error('Supabase insert error:', error);

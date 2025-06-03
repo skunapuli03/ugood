@@ -12,11 +12,11 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { journalEntry } = req.body;
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
       
       // Generate the reflection (lesson)
       const reflectionResult = await model.generateContent(
-        `What can I learn, and improve upon from this journal-entry, be a helpful friend and therapist, provide solutions to the problem and if no problem, provide suggestions to be better, response has to be within 4 sentences, but it has to be a legit journal, not some bs like "make a sandwich".: ${journalEntry}`
+        `What can I learn, and improve upon from this journal-entry, be a helpful friend and therapist, provide solutions to the problem and if no problem, provide suggestions to be better, response has to be within 4 sentences: ${journalEntry}`
       );  
       
       const reflection = reflectionResult.response.text();
