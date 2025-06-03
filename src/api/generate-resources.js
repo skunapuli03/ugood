@@ -5,7 +5,7 @@ import { createClient } from '@supabase/supabase-js';
 dotenv.config();
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
-const supabase = createClient("https://ggksgziwgftlyfngtolu.supabase.co", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8");
+const supabase = createClient("https://ggksgziwgftlyfngtolu.supabase.co", "YOUR_SUPABASE_KEY");
 
 export default async function handler(req, res) {
   console.log("Handler called with method:", req.method); // Debug log
@@ -31,7 +31,7 @@ export default async function handler(req, res) {
       throw error;
     }
 
-    console.log("Found journals:", journals?.length || 0); // Debug log
+    console.log("Fetched journals:", journals); // Debug log
 
     if (!journals || journals.length === 0) {
       console.log("No journals found for user."); // Debug log
@@ -45,6 +45,16 @@ export default async function handler(req, res) {
 
     const filteredJournals = journals.filter(j => j.reflection && j.reflection.trim() !== '');
     console.log("Filtered journals with reflections:", filteredJournals); // Debug log
+
+    if (filteredJournals.length === 0) {
+      console.log("No reflections found in journals."); // Debug log
+      return res.json({
+        articles: [],
+        videos: [],
+        books: [],
+        message: "No reflections found in your journals. Add reflections to get personalized resources!",
+      });
+    }
 
     const context = filteredJournals
       .map(j => `Entry: ${j.content}\nLesson: ${j.reflection}`)
@@ -68,10 +78,9 @@ export default async function handler(req, res) {
     `;
     console.log("Generated AI prompt:", prompt); // Debug log
 
-    console.log("Sending prompt to Gemini:", prompt); // Debug log
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    console.log("AI response:", text); // Debug log
+    console.log("AI response (raw):", text); // Debug log
 
     let parsed;
     try {
@@ -81,6 +90,7 @@ export default async function handler(req, res) {
       return res.status(500).json({
         error: "AI response not valid JSON",
         raw: text,
+        message: "The AI response could not be processed. Please try again later.",
       });
     }
 
