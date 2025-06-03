@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { journalEntry } = req.body;
     try {
-      const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
       
       // Generate the reflection (lesson)
       const reflectionResult = await model.generateContent(
