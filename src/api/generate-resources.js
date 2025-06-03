@@ -19,14 +19,12 @@ export default async function handler(req, res) {
   }
 
   try {
-    const since = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
-    console.log("Fetching journals since:", since); // Debug log
+    console.log("Fetching journals for userId:", userId); // Debug log
 
     const { data: journals, error } = await supabase
       .from('journals')
       .select('content,reflection')
-      .eq('user_id', userId)
-      .gte('created_at', since);
+      .eq('user_id', userId); // Removed the date filter
 
     if (error) {
       console.error("Supabase error:", error); // Debug log
@@ -41,7 +39,7 @@ export default async function handler(req, res) {
         articles: [],
         videos: [],
         books: [],
-        message: "No recent journals found",
+        message: "You don't have any journals yet. Start journaling to get personalized resources!",
       });
     }
 

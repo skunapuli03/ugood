@@ -63,10 +63,6 @@ function Resources() {
         const data = await res.json();
         console.log("Resources fetched:", data); // Debug log
 
-        if (!data || !data.articles || !data.videos || !data.books) {
-          throw new Error("Invalid response format");
-        }
-
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (error) {
         console.error("Error fetching resources:", error); // Debug log
@@ -90,7 +86,7 @@ function Resources() {
       {loading && <p>Loading resources...</p>}
       {error && <p style={{ color: 'red' }}>{error}</p>}
       {!loading && !error && resources.articles.length === 0 && resources.videos.length === 0 && resources.books.length === 0 && (
-        <p>No resources found. Please add more journal entries to get recommendations.</p>
+        <p>{resources.message || "No resources found. Please add more journal entries to get recommendations."}</p>
       )}
       {!loading && !error && (
         <>
