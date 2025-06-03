@@ -8,7 +8,7 @@ import App from './App.jsx';
 import Layout from './layout.jsx'; // Import the layout
 import Entry from './entry.jsx';
 import Features from './features.jsx'
-import Resources from './Resources.jsx';
+import Resources from './resources.jsx';
 import AuthPage from './auth.jsx';
 import JournalDetail from './journalDetail.jsx';
 import ResetPasswordConfirmation from './reset-password.jsx';
@@ -35,7 +35,7 @@ const router = createBrowserRouter([
   },
 
   {
-    path: "/Resources",
+    path: "/resources",
     element: <Layout> <Resources/></Layout>,
   },
   {
