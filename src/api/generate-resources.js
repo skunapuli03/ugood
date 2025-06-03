@@ -24,7 +24,7 @@ export default async function handler(req, res) {
     const { data: journals, error } = await supabase
       .from('journals')
       .select('content,reflection')
-      .eq('user_id', userId); // Removed the date filter
+      .eq('user_id', userId);
 
     if (error) {
       console.error("Supabase error:", error); // Debug log
@@ -43,9 +43,13 @@ export default async function handler(req, res) {
       });
     }
 
-    const context = journals
-      .map(j => `Entry: ${j.content}\nLesson: ${j.reflection || ''}`)
+    const filteredJournals = journals.filter(j => j.reflection && j.reflection.trim() !== '');
+    console.log("Filtered journals with reflections:", filteredJournals); // Debug log
+
+    const context = filteredJournals
+      .map(j => `Entry: ${j.content}\nLesson: ${j.reflection}`)
       .join('\n\n');
+    console.log("Generated context for AI:", context); // Debug log
 
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
     const prompt = `
@@ -62,17 +66,18 @@ export default async function handler(req, res) {
         "books": [{"title": "string", "url": "string"}]
       }
     `;
+    console.log("Generated AI prompt:", prompt); // Debug log
 
     console.log("Sending prompt to Gemini:", prompt); // Debug log
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    console.log("Gemini response:", text); // Debug log
+    console.log("AI response:", text); // Debug log
 
     let parsed;
     try {
       parsed = JSON.parse(text);
     } catch (e) {
-      console.error("Failed to parse Gemini response:", e); // Debug log
+      console.error("Failed to parse AI response:", e); // Debug log
       return res.status(500).json({
         error: "AI response not valid JSON",
         raw: text,
