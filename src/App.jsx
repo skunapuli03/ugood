@@ -5,6 +5,7 @@ import { Analytics } from "@vercel/analytics/react";
 import Navbar from "./navbar.jsx";
 import { createClient } from '@supabase/supabase-js';
 import { motion } from "framer-motion";
+import { format } from 'date-fns';
 
 
 
@@ -195,7 +196,7 @@ function App() {
                             <p>{journal.reflection.substring(0, 75)}...</p>
                           </div>
                         )}
-                        <span className="read-more-link">Read More ➡️</span> {new Date().toLocaleDateString()}
+                        <span className="read-more-link">Read More ➡️</span> {format(new Date(journal.created_at), 'MM/dd/yyyy')}
                       </motion.div>
                     </Link>
                   ))}
