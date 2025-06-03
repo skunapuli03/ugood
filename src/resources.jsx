@@ -55,8 +55,18 @@ function Resources() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: session?.user?.id }),
         });
+
+        if (!res.ok) {
+          throw new Error(`API error: ${res.status}`);
+        }
+
         const data = await res.json();
         console.log("Resources fetched:", data); // Debug log
+
+        if (!data || !data.articles || !data.videos || !data.books) {
+          throw new Error("Invalid response format");
+        }
+
         dispatch({ type: 'FETCH_SUCCESS', payload: data });
       } catch (error) {
         console.error("Error fetching resources:", error); // Debug log
