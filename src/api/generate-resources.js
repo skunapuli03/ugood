@@ -90,7 +90,6 @@ export default async function handler(req, res) {
       return res.status(500).json({
         error: "AI response not valid JSON",
         raw: text,
-        message: "The AI response could not be processed. Please try again later.",
       });
     }
 
@@ -104,3 +103,11 @@ export default async function handler(req, res) {
     });
   }
 }
+
+{error && (
+  <p style={{ color: 'red' }}>
+    {error === 'Failed to load resources.'
+      ? 'An error occurred while loading resources. Please try again later.'
+      : error}
+  </p>
+)}
