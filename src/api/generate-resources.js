@@ -89,7 +89,7 @@ export default async function handler(req, res) {
       .map((j, index) => `Journal Entry ${index + 1}:\nContent: ${j.content}\nReflection: ${j.reflection}`)
       .join('\n\n---\n\n');
     console.log(`[${new Date().toISOString()}] Generated AI context string. Length: ${context.length} characters.`);
-    // console.log("AI Context (truncated):", context.substring(0, 500) + (context.length > 500 ? '...' : ''));
+    console.log("AI Context (truncated):", context.substring(0, 500) + (context.length > 500 ? '...' : ''));
 
     // Step 4: Initialize the Generative AI model
     const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
