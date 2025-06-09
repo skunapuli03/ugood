@@ -92,12 +92,12 @@ export default async function handler(req, res) {
     // console.log("AI Context (truncated):", context.substring(0, 500) + (context.length > 500 ? '...' : ''));
 
     // Step 4: Initialize the Generative AI model
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
 
     // Step 5: Define the prompt for the AI model
     const prompt = `
       You are an AI assistant specialized in providing personalized learning resources.
-      Based on the following journal entries and the lessons derived from them,
+      Based on the user's journal entries and the lessons derived from them,
       suggest 3-5 helpful articles, 3-5 helpful videos, and 3-5 helpful books.
       Each suggestion should include a "title" and a working "url".
       Leverage comprehensive search capabilities to find the most relevant and high-quality resources.
