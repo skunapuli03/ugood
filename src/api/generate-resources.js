@@ -57,12 +57,12 @@ export default async function handler(req, res) {
 
     // Log the raw journals data fetched
     console.log(`[${new Date().toISOString()}] Fetched ${journals ? journals.length : 0} journals from Supabase.`);
-    // console.log("Raw Journals Data:", JSON.stringify(journals, null, 2)); // Uncomment for full raw data inspection
+    console.log("Raw Journals Data:", JSON.stringify(journals, null, 2)); // Uncomment for full raw data inspection
 
     // Step 2: Filter journals to include only those with non-empty reflections
     const filteredJournals = journals.filter(j => j.reflection && j.reflection.trim() !== '');
     console.log(`[${new Date().toISOString()}] Filtered down to ${filteredJournals.length} journals with non-empty reflections.`);
-    // console.log("Filtered Journals:", JSON.stringify(filteredJournals, null, 2)); // Uncomment for full filtered data inspection
+    console.log("Filtered Journals:", JSON.stringify(filteredJournals, null, 2)); // Uncomment for full filtered data inspection
 
     // If no reflections are found after filtering, return a specific message
     if (filteredJournals.length === 0) {
@@ -81,7 +81,7 @@ export default async function handler(req, res) {
       .map((j, index) => `Journal Entry ${index + 1}:\nContent: ${j.content}\nReflection: ${j.reflection}`)
       .join('\n\n---\n\n'); // Use a clear separator for multiple entries
     console.log(`[${new Date().toISOString()}] Generated AI context string. Length: ${context.length} characters.`);
-    // console.log("AI Context (truncated):", context.substring(0, 500) + (context.length > 500 ? '...' : '')); // Log truncated context for readability
+    console.log("AI Context (truncated):", context.substring(0, 500) + (context.length > 500 ? '...' : '')); // Log truncated context for readability
 
     // Step 4: Initialize the Generative AI model
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }); // Consider 'gemini-2.0-pro' for potentially higher quality
@@ -116,7 +116,7 @@ export default async function handler(req, res) {
       }
     `;
     console.log(`[${new Date().toISOString()}] Generated AI prompt. Length: ${prompt.length} characters.`);
-    // console.log("AI Prompt (truncated):", prompt.substring(0, 500) + (prompt.length > 500 ? '...' : '')); // Log truncated prompt
+    console.log("AI Prompt (truncated):", prompt.substring(0, 500) + (prompt.length > 500 ? '...' : '')); // Log truncated prompt
 
     // Step 6: Call the Generative AI model
     // We explicitly set responseMimeType to "application/json" for better structured output
@@ -139,7 +139,7 @@ export default async function handler(req, res) {
     try {
       parsedResources = JSON.parse(responseText);
       console.log(`[${new Date().toISOString()}] Successfully parsed AI response.`);
-      // console.log("Parsed AI Resources:", JSON.stringify(parsedResources, null, 2)); // Log parsed object
+      console.log("Parsed AI Resources:", JSON.stringify(parsedResources, null, 2)); // Log parsed object
     } catch (parseError) {
       console.error(`[${new Date().toISOString()}] Error parsing AI response JSON:`, parseError.message);
       console.error("AI Response Text that failed to parse:", responseText); // Log the problematic text
