@@ -8,30 +8,41 @@ dotenv.config();
 // Initialize Google Generative AI with API key from environment
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
-// Initialize Supabase client with your project URL and public key
-// Ensure these keys are correctly set in your environment variables for production
-// For Vercel, you'd configure these as environment variables in the project settings
+// Supabase configuration
 const supabaseUrl = process.env.SUPABASE_URL || "https://ggksgziwgftlyfngtolu.supabase.co";
-const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8';
+// *** IMPORTANT CHANGE HERE ***
+// Use the SUPABASE_SERVICE_ROLE_KEY for backend operations to bypass RLS.
+// This key MUST be stored securely as an environment variable on your server (Render.com).
+// DO NOT expose this key to your frontend.
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Check if the service role key is available
+if (!supabaseServiceRoleKey) {
+  console.error("SUPABASE_SERVICE_ROLE_KEY is not set. Please set it as an environment variable.");
+  // You might want to throw an error or handle this more gracefully in a real app
+  // For now, we'll proceed with anon key, but it will likely fail due to RLS
+}
+
+// Initialize Supabase client
+// Use the service role key if available, otherwise fall back to anon key (for dev/testing if service key isn't set)
+const supabase = createClient(supabaseUrl, supabaseServiceRoleKey || process.env.SUPABASE_ANON_KEY, {
+  // Important for server-side to prevent session persistence
+  auth: { persistSession: false },
+});
+
 
 // The main handler for your API endpoint
 export default async function handler(req, res) {
-  // Log the incoming request method for debugging
   console.log(`[${new Date().toISOString()}] Handler called with method:`, req.method);
 
-  // Ensure the request is a POST request, as we expect userId in the body
   if (req.method !== 'POST') {
     console.warn(`[${new Date().toISOString()}] Method Not Allowed: ${req.method}`);
     return res.status(405).json({ error: 'Method Not Allowed. Please use POST.' });
   }
 
-  // Extract userId from the request body
   const { userId } = req.body;
   console.log(`[${new Date().toISOString()}] Received request for userId:`, userId);
 
-  // Validate userId presence
   if (!userId) {
     console.error(`[${new Date().toISOString()}] Error: Missing userId in request body.`);
     return res.status(400).json({ error: 'Missing userId in request body. Please provide a userId.' });
@@ -39,32 +50,30 @@ export default async function handler(req, res) {
 
   try {
     // Step 1: Fetch journals from Supabase for the given userId
-    console.log(`[${new Date().toISOString()}] Attempting to fetch journals for userId: ${userId} from Supabase.`);
+    // With the service_role key, this query will bypass RLS and should now fetch the data.
+    console.log(`[${new Date().toISOString()}] Attempting to fetch journals for userId: ${userId} from Supabase using SERVICE ROLE KEY.`);
     const { data: journals, error } = await supabase
       .from('journals')
-      .select('content,reflection') // Select both content and reflection fields
-      .eq('user_id', userId); // Filter by the provided user_id
+      .select('content,reflection,user_id') // Added user_id to select for debugging
+      .eq('user_id', userId);
 
-    // Handle Supabase fetch errors
     if (error) {
       console.error(`[${new Date().toISOString()}] Supabase fetch error:`, error.message, error.details);
-      // It's good to provide a more user-friendly message for internal errors
       return res.status(500).json({
         error: 'Failed to retrieve journals from the database.',
         details: error.message,
       });
     }
 
-    // Log the raw journals data fetched
     console.log(`[${new Date().toISOString()}] Fetched ${journals ? journals.length : 0} journals from Supabase.`);
-    console.log("Raw Journals Data:", JSON.stringify(journals, null, 2)); // Uncomment for full raw data inspection
+    console.log("Raw Journals Data:", JSON.stringify(journals, null, 2)); // Keep this for now to confirm data
 
     // Step 2: Filter journals to include only those with non-empty reflections
-    const filteredJournals = journals.filter(j => j.reflection && j.reflection.trim() !== '');
+    const filteredJournals = journals.filter(j => j.reflection && typeof j.reflection === 'string' && j.reflection.trim() !== '');
     console.log(`[${new Date().toISOString()}] Filtered down to ${filteredJournals.length} journals with non-empty reflections.`);
-    console.log("Filtered Journals:", JSON.stringify(filteredJournals, null, 2)); // Uncomment for full filtered data inspection
+    console.log("Filtered Journals (truncated):", JSON.stringify(filteredJournals.map(j => ({ userId: j.user_id, reflection: j.reflection ? j.reflection.substring(0, 50) + '...' : 'N/A' })), null, 2));
 
-    // If no reflections are found after filtering, return a specific message
+
     if (filteredJournals.length === 0) {
       console.log(`[${new Date().toISOString()}] No meaningful reflections found for userId: ${userId}.`);
       return res.json({
@@ -76,18 +85,16 @@ export default async function handler(req, res) {
     }
 
     // Step 3: Construct the context string for the AI model
-    // This combines the content and reflection from each relevant journal entry
     const context = filteredJournals
       .map((j, index) => `Journal Entry ${index + 1}:\nContent: ${j.content}\nReflection: ${j.reflection}`)
-      .join('\n\n---\n\n'); // Use a clear separator for multiple entries
+      .join('\n\n---\n\n');
     console.log(`[${new Date().toISOString()}] Generated AI context string. Length: ${context.length} characters.`);
-    console.log("AI Context (truncated):", context.substring(0, 500) + (context.length > 500 ? '...' : '')); // Log truncated context for readability
+    // console.log("AI Context (truncated):", context.substring(0, 500) + (context.length > 500 ? '...' : ''));
 
     // Step 4: Initialize the Generative AI model
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' }); // Consider 'gemini-2.0-pro' for potentially higher quality
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     // Step 5: Define the prompt for the AI model
-    // The prompt explicitly asks for JSON output with specific fields
     const prompt = `
       You are an AI assistant specialized in providing personalized learning resources.
       Based on the following journal entries and the lessons derived from them,
@@ -116,46 +123,42 @@ export default async function handler(req, res) {
       }
     `;
     console.log(`[${new Date().toISOString()}] Generated AI prompt. Length: ${prompt.length} characters.`);
-    console.log("AI Prompt (truncated):", prompt.substring(0, 500) + (prompt.length > 500 ? '...' : '')); // Log truncated prompt
+    // console.log("AI Prompt (truncated):", prompt.substring(0, 500) + (prompt.length > 500 ? '...' : ''));
 
     // Step 6: Call the Generative AI model
-    // We explicitly set responseMimeType to "application/json" for better structured output
-    // And enable googleSearch tool for the model to find relevant links
     console.log(`[${new Date().toISOString()}] Calling Google Generative AI model...`);
     const result = await model.generateContent({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       generationConfig: {
-        responseMimeType: "application/json", // Instructs the model to output JSON directly
+        responseMimeType: "application/json",
       },
-      tools: [{ googleSearch: {} }] // Enable Google Search for the model
+      tools: [{ googleSearch: {} }]
     });
 
     const responseText = result.response.text();
     console.log(`[${new Date().toISOString()}] AI response received. Length: ${responseText.length} characters.`);
-    console.log("Raw AI Response Text:", responseText); // Log the full raw AI response
+    console.log("Raw AI Response Text:", responseText);
 
     // Step 7: Parse the AI's response as JSON
     let parsedResources;
     try {
       parsedResources = JSON.parse(responseText);
       console.log(`[${new Date().toISOString()}] Successfully parsed AI response.`);
-      console.log("Parsed AI Resources:", JSON.stringify(parsedResources, null, 2)); // Log parsed object
+      // console.log("Parsed AI Resources:", JSON.stringify(parsedResources, null, 2));
     } catch (parseError) {
       console.error(`[${new Date().toISOString()}] Error parsing AI response JSON:`, parseError.message);
-      console.error("AI Response Text that failed to parse:", responseText); // Log the problematic text
+      console.error("AI Response Text that failed to parse:", responseText);
       return res.status(500).json({
         error: "Failed to parse AI response. AI might have returned invalid JSON.",
-        rawAiResponse: responseText, // Include raw response for debugging
+        rawAiResponse: responseText,
         parseError: parseError.message,
       });
     }
 
-    // Step 8: Ensure the parsed response has the expected structure and default to empty arrays if not present
     const articles = Array.isArray(parsedResources.articles) ? parsedResources.articles : [];
     const videos = Array.isArray(parsedResources.videos) ? parsedResources.videos : [];
     const books = Array.isArray(parsedResources.books) ? parsedResources.books : [];
 
-    // Final response to the client
     res.json({
       articles,
       videos,
@@ -167,13 +170,10 @@ export default async function handler(req, res) {
     console.log(`[${new Date().toISOString()}] Successfully sent resources to client.`);
 
   } catch (err) {
-    // Catch-all for any unexpected errors during the process
     console.error(`[${new Date().toISOString()}] Unhandled error in handler:`, err);
     return res.status(500).json({
       error: 'An unexpected error occurred while generating resources.',
       details: err.message,
-      // In development, you might want to send the stack for more details
-      // stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
     });
   }
 }
