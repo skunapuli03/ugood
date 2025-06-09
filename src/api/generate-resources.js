@@ -78,7 +78,12 @@ export default async function handler(req, res) {
     `;
     console.log("Generated AI prompt:", prompt); // Debug log
 
-    const result = await model.generateContent(prompt);
+    const result = await model.generateContent({
+      contents: [prompt],
+      config: {
+        tools: [{ googleSearch: {} }]
+      }
+    });
     const text = result.response.text();
     console.log("AI response (raw):", text); // Debug log
 
