@@ -14,10 +14,10 @@ const supabaseUrl = process.env.SUPABASE_URL || "https://ggksgziwgftlyfngtolu.su
 // Use the SUPABASE_SERVICE_ROLE_KEY for backend operations to bypass RLS.
 // This key MUST be stored securely as an environment variable on your server (Render.com).
 // DO NOT expose this key to your frontend.
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdna3Nneml3Z2Z0bHlmbmd0b2x1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzk0NzI2MzYsImV4cCI6MjA1NTA0ODYzNn0.NsHJXXdtWV6PmdqqV_Q8pjmp9CXE23mTXYVRpPzt9M8';
 
 // Check if the service role key is available
-if (!supabaseServiceRoleKey) {
+if (!supabaseKey) {
   console.error("SUPABASE_SERVICE_ROLE_KEY is not set. Please set it as an environment variable.");
   // You might want to throw an error or handle this more gracefully in a real app
   // For now, we'll proceed with anon key, but it will likely fail due to RLS
@@ -25,7 +25,7 @@ if (!supabaseServiceRoleKey) {
 
 // Initialize Supabase client
 // Use the service role key if available, otherwise fall back to anon key (for dev/testing if service key isn't set)
-const supabase = createClient(supabaseUrl, supabaseServiceRoleKey || process.env.SUPABASE_ANON_KEY, {
+const supabase = createClient(supabaseUrl, supabaseKey, {
   // Important for server-side to prevent session persistence
   auth: { persistSession: false },
 });
