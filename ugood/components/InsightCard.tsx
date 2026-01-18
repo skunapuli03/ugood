@@ -22,7 +22,7 @@ export default function InsightCard({
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <Text style={styles.title}>{title}</Text>
+        {/*<Text style={styles.title}>{title}</Text> */}
         <Text style={styles.content}>{content}</Text>
       </LinearGradient>
     </View>

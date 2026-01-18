@@ -9,14 +9,17 @@ import {
   ActivityIndicator,
   FlatList,
   Animated,
+  Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useUserStore } from '../../store/userStore';
 import { useJournalStore } from '../../store/journalStore';
+import { useMoodStore } from '../../store/moodStore';
 import { getEntryInsights } from '../../services/aiProcessor';
 import GradientHeader from '../../components/GradientHeader';
+import EntryCard from '../../components/EntryCard';
 import { colors, gradients, borderRadius, shadows } from '../../utils/theme';
 import { formatDate } from '../../utils/format';
 
@@ -24,6 +27,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const { user, session, initialize } = useUserStore();
   const { entries, loading, fetchEntries } = useJournalStore();
+  const { lastMoodAt, frequency, recordMood, fetchLastMoodTime } = useMoodStore();
   const [refreshing, setRefreshing] = React.useState(false);
   const [selectedMood, setSelectedMood] = React.useState('');
   const [todayInsight, setTodayInsight] = React.useState<any>(null);
@@ -37,6 +41,7 @@ export default function HomeScreen() {
   useEffect(() => {
     if (user) {
       fetchEntries(user.id);
+      fetchLastMoodTime(user.id);
     }
   }, [user]);
 
@@ -66,13 +71,34 @@ export default function HomeScreen() {
   const checkmarkAnimations = useRef(moodEmojis.map(() => new Animated.Value(0))).current;
   const scaleAnimations = useRef(moodEmojis.map(() => new Animated.Value(1))).current;
 
-  const handleMoodPress = (emoji: string, index: number) => {
+  const isMoodThrottled = useMemo(() => {
+    if (!lastMoodAt) return false;
+    const now = Date.now();
+    return (now - lastMoodAt) < (frequency * 60 * 1000);
+  }, [lastMoodAt, frequency]);
+
+  const handleMoodPress = async (emoji: string, index: number) => {
+    if (!user) return;
+
+    if (isMoodThrottled) {
+      const remainingMs = (frequency * 60 * 1000) - (Date.now() - lastMoodAt!);
+      const mins = Math.ceil(remainingMs / 60000);
+      Alert.alert('Mood Saved!', `Your mood has been recorded! We'll stay by your side until it's time for the next check-in (in about ${mins}m).`);
+      return;
+    }
+
+    const { success, message } = await recordMood(user.id, emoji);
+    if (!success) {
+      Alert.alert('Notification', message);
+      return;
+    }
+
     setSelectedMood(emoji);
-    
+
     // Reset animations
     checkmarkAnimations[index].setValue(0);
     scaleAnimations[index].setValue(1);
-    
+
     // Scale up then down animation
     Animated.sequence([
       Animated.spring(scaleAnimations[index], {
@@ -88,7 +114,7 @@ export default function HomeScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-    
+
     // Show checkmark animation
     Animated.sequence([
       Animated.timing(checkmarkAnimations[index], {
@@ -96,7 +122,7 @@ export default function HomeScreen() {
         duration: 200,
         useNativeDriver: true,
       }),
-      Animated.delay(800),
+      Animated.delay(1500),
       Animated.timing(checkmarkAnimations[index], {
         toValue: 0,
         duration: 200,
@@ -113,10 +139,10 @@ export default function HomeScreen() {
     );
   }
 
-  const userName = user.user_metadata?.full_name || 
-                   user.user_metadata?.name || 
-                   user.email?.split('@')[0] || 
-                   'Guest';
+  const userName = user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    user.email?.split('@')[0] ||
+    'Guest';
 
   return (
     <ScrollView
@@ -150,20 +176,21 @@ export default function HomeScreen() {
                     style={[
                       styles.moodButton,
                       {
-                        backgroundColor: selectedMood === emoji 
-                          ? moodColors[index] 
+                        backgroundColor: selectedMood === emoji
+                          ? moodColors[index]
                           : '#F3F4F6',
                         transform: [{ scale }],
+                        opacity: isMoodThrottled && selectedMood !== emoji ? 0.5 : 1,
                       },
                     ]}
                   >
                     <TouchableOpacity
                       style={styles.moodButtonInner}
                       onPress={() => handleMoodPress(emoji, index)}
-                      activeOpacity={0.7}
+                      activeOpacity={isMoodThrottled ? 1 : 0.7}
                     >
                       <Text style={styles.moodEmoji}>{emoji}</Text>
-                      
+
                       {/* Checkmark overlay */}
                       <Animated.View
                         style={[
@@ -220,27 +247,20 @@ export default function HomeScreen() {
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
-                renderItem={({ item }) => {
-                  // Extract title and preview from content
-                  const parts = item.content.split('\n\n');
-                  const title = parts[0] || 'Untitled Entry';
-                  const preview = parts.length > 1 ? parts.slice(1).join(' ') : item.content;
-                  
-                  return (
-                    <TouchableOpacity
-                      style={styles.entryCard}
+                renderItem={({ item }) => (
+                  <View style={styles.entryCardWrapper}>
+                    <EntryCard
+                      entry={item}
                       onPress={() => router.push(`/journal/view/${item.id}`)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.entryCardTitle} numberOfLines={1}>
-                        {title.length > 30 ? title.substring(0, 30) + '...' : title}
-                      </Text>
-                      <Text style={styles.entryCardPreview} numberOfLines={3}>
-                        {preview.length > 80 ? preview.substring(0, 80) + '...' : preview}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                }}
+                      onEdit={() => router.push(`/journal/edit/${item.id}`)}
+                      onViewLesson={() => router.push(`/journal/lesson/${item.id}`)}
+                      onDelete={async () => {
+                        const { deleteEntry } = useJournalStore.getState();
+                        await deleteEntry(item.id);
+                      }}
+                    />
+                  </View>
+                )}
                 contentContainerStyle={styles.entriesList}
               />
               {entries.length >= 3 && (
@@ -371,23 +391,9 @@ const styles = StyleSheet.create({
   entriesList: {
     paddingRight: 20,
   },
-  entryCard: {
+  entryCardWrapper: {
     width: 280,
-    backgroundColor: '#FFFFFF',
-    borderRadius: borderRadius.lg,
-    padding: 16,
     marginRight: 12,
-  },
-  entryCardTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.light.text,
-    marginBottom: 8,
-  },
-  entryCardPreview: {
-    fontSize: 14,
-    color: colors.light.textSecondary,
-    lineHeight: 20,
   },
   insightSection: {
     marginTop: 16,

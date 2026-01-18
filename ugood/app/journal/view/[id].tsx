@@ -76,10 +76,8 @@ export default function ViewEntryScreen() {
 
       <View style={styles.content}>
         <View style={styles.header}>
-          <View style={styles.moodContainer}>
-            <Text style={styles.mood}>{entry.mood}</Text>
-            <Text style={styles.date}>{formatDateTime(entry.updated_at)}</Text>
-          </View>
+          <Text style={styles.title}>{entry.title || 'Untitled Entry'}</Text>
+          <Text style={styles.date}>{formatDateTime(entry.created_at)}</Text>
         </View>
 
         <View style={styles.textContainer}>
@@ -92,7 +90,7 @@ export default function ViewEntryScreen() {
             onPress={() => router.push(`/journal/lesson/${entry.id}`)}
           >
             <LinearGradient
-              colors={gradients.primary}
+              colors={gradients.primary as any}
               start={{ x: 0, y: 0 }}
               end={{ x: 1, y: 1 }}
               style={styles.actionGradient}
@@ -134,15 +132,13 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   header: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
-  moodContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  mood: {
-    fontSize: 32,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.light.text,
+    marginBottom: 8,
   },
   date: {
     fontSize: 14,
@@ -210,4 +206,3 @@ const styles = StyleSheet.create({
     color: '#EF4444',
   },
 });
-

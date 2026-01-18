@@ -5,6 +5,7 @@
 CREATE TABLE IF NOT EXISTS journals (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT DEFAULT 'Untitled Entry',
   content TEXT NOT NULL,
   mood TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -86,4 +87,26 @@ CREATE INDEX IF NOT EXISTS journals_user_id_idx ON journals(user_id);
 CREATE INDEX IF NOT EXISTS journals_created_at_idx ON journals(created_at DESC);
 CREATE INDEX IF NOT EXISTS insights_user_id_idx ON insights(user_id);
 CREATE INDEX IF NOT EXISTS insights_entry_id_idx ON insights(entry_id);
+
+-- 10. Create moods table for tracking periodic moods
+CREATE TABLE IF NOT EXISTS moods (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  emoji TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE moods ENABLE ROW LEVEL SECURITY;
+
+-- RLS Policies
+CREATE POLICY "Users can view own moods" ON moods
+  FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own moods" ON moods
+  FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+-- Index for performance
+CREATE INDEX IF NOT EXISTS moods_user_id_idx ON moods(user_id);
+CREATE INDEX IF NOT EXISTS moods_created_at_idx ON moods(created_at DESC);
 

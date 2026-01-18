@@ -15,10 +15,12 @@ import { useUserStore } from '../../store/userStore';
 import { signOut } from '../../services/auth';
 import GradientHeader from '../../components/GradientHeader';
 import { colors, gradients, borderRadius, shadows } from '../../utils/theme';
+import { useMoodStore } from '../../store/moodStore';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, session, clear } = useUserStore();
+  const { frequency, setFrequency } = useMoodStore();
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -82,6 +84,29 @@ export default function ProfileScreen() {
               trackColor={{ false: colors.light.border, true: colors.light.primary }}
               thumbColor="#FFFFFF"
             />
+          </View>
+
+          <View style={styles.moodFrequencySection}>
+            <Text style={styles.settingLabel}>Mood Check-in Frequency</Text>
+            <View style={styles.frequencyOptions}>
+              {[15, 30, 60, 120].map((mins) => (
+                <TouchableOpacity
+                  key={mins}
+                  style={[
+                    styles.frequencyButton,
+                    frequency === mins && styles.frequencyButtonActive
+                  ]}
+                  onPress={() => setFrequency(mins)}
+                >
+                  <Text style={[
+                    styles.frequencyButtonText,
+                    frequency === mins && styles.frequencyButtonTextActive
+                  ]}>
+                    {mins >= 60 ? `${mins / 60}h` : `${mins}m`}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
           </View>
         </View>
 
@@ -187,6 +212,40 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.light.text,
     fontWeight: '500',
+  },
+  moodFrequencySection: {
+    backgroundColor: colors.light.surface,
+    padding: 16,
+    borderRadius: borderRadius.md,
+    marginBottom: 12,
+    ...shadows.sm,
+  },
+  frequencyOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 12,
+    gap: 8,
+  },
+  frequencyButton: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: borderRadius.sm,
+    backgroundColor: colors.light.background,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.light.border,
+  },
+  frequencyButtonActive: {
+    backgroundColor: colors.light.primary,
+    borderColor: colors.light.primary,
+  },
+  frequencyButtonText: {
+    fontSize: 14,
+    color: colors.light.textSecondary,
+    fontWeight: '600',
+  },
+  frequencyButtonTextActive: {
+    color: '#FFFFFF',
   },
   menuItem: {
     flexDirection: 'row',

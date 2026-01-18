@@ -25,14 +25,8 @@ export default function EditEntryScreen() {
     if (id) {
       const entry = getEntry(id);
       if (entry) {
-        // Split content into title and body if it has newlines
-        const parts = entry.content.split('\n\n');
-        if (parts.length > 1) {
-          setTitle(parts[0]);
-          setContent(parts.slice(1).join('\n\n'));
-        } else {
-          setContent(entry.content);
-        }
+        setTitle(entry.title || '');
+        setContent(entry.content);
       } else {
         router.back();
       }
@@ -50,11 +44,9 @@ export default function EditEntryScreen() {
       return;
     }
 
-    // Combine title and content
-    const entryContent = title.trim() ? `${title}\n\n${content}` : content;
     const mood = '😊'; // Keep existing mood
 
-    const success = await updateEntry(id, entryContent.trim(), mood);
+    const success = await updateEntry(id, title.trim() || 'Untitled Entry', content.trim(), mood);
     if (success) {
       router.back();
     } else {
@@ -68,46 +60,46 @@ export default function EditEntryScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-          {/* Simple header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Edit Entry</Text>
-            <TouchableOpacity
-              onPress={handleDone}
-              disabled={loading}
-              style={styles.doneButton}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.light.primary} size="small" />
-              ) : (
-                <Text style={styles.doneText}>Done</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+        {/* Simple header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Edit Entry</Text>
+          <TouchableOpacity
+            onPress={handleDone}
+            disabled={loading}
+            style={styles.doneButton}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.light.primary} size="small" />
+            ) : (
+              <Text style={styles.doneText}>Done</Text>
+            )}
+          </TouchableOpacity>
+        </View>
 
-          {/* Title input */}
-          <TextInput
-            style={styles.titleInput}
-            placeholder="Title (optional)"
-            placeholderTextColor={colors.light.textSecondary}
-            value={title}
-            onChangeText={setTitle}
-            autoFocus={false}
-          />
+        {/* Title input */}
+        <TextInput
+          style={styles.titleInput}
+          placeholder="Title (optional)"
+          placeholderTextColor={colors.light.textSecondary}
+          value={title}
+          onChangeText={setTitle}
+          autoFocus={false}
+        />
 
-          {/* Content input */}
-          <TextInput
-            style={styles.contentInput}
-            placeholder="What's on your mind?"
-            placeholderTextColor={colors.light.textSecondary}
-            value={content}
-            onChangeText={setContent}
-            multiline
-            textAlignVertical="top"
-            autoFocus
-          />
+        {/* Content input */}
+        <TextInput
+          style={styles.contentInput}
+          placeholder="What's on your mind?"
+          placeholderTextColor={colors.light.textSecondary}
+          value={content}
+          onChangeText={setContent}
+          multiline
+          textAlignVertical="top"
+          autoFocus
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

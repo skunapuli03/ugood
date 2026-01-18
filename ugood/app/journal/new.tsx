@@ -33,11 +33,9 @@ export default function NewEntryScreen() {
       return;
     }
 
-    // Use content as title if no title provided, or combine them
-    const entryContent = title.trim() ? `${title}\n\n${content}` : content;
     const mood = '😊'; // Default mood
 
-    const entry = await createEntry(user.id, entryContent.trim(), mood);
+    const entry = await createEntry(user.id, title.trim() || 'Untitled Entry', content.trim(), mood);
     if (entry) {
       router.back();
     } else {
@@ -51,46 +49,46 @@ export default function NewEntryScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       >
-          {/* Simple header */}
-          <View style={styles.header}>
-            <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>New Entry</Text>
-            <TouchableOpacity
-              onPress={handleDone}
-              disabled={loading}
-              style={styles.doneButton}
-            >
-              {loading ? (
-                <ActivityIndicator color={colors.light.primary} size="small" />
-              ) : (
-                <Text style={styles.doneText}>Done</Text>
-              )}
-            </TouchableOpacity>
-          </View>
+        {/* Simple header */}
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
+            <Text style={styles.cancelText}>Cancel</Text>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>New Entry</Text>
+          <TouchableOpacity
+            onPress={handleDone}
+            disabled={loading}
+            style={styles.doneButton}
+          >
+            {loading ? (
+              <ActivityIndicator color={colors.light.primary} size="small" />
+            ) : (
+              <Text style={styles.doneText}>Done</Text>
+            )}
+          </TouchableOpacity>
+        </View>
 
-          {/* Title input */}
-          <TextInput
-            style={styles.titleInput}
-            placeholder="Title (optional)"
-            placeholderTextColor={colors.light.textSecondary}
-            value={title}
-            onChangeText={setTitle}
-            autoFocus={false}
-          />
+        {/* Title input */}
+        <TextInput
+          style={styles.titleInput}
+          placeholder="Title (optional)"
+          placeholderTextColor={colors.light.textSecondary}
+          value={title}
+          onChangeText={setTitle}
+          autoFocus={false}
+        />
 
-          {/* Content input */}
-          <TextInput
-            style={styles.contentInput}
-            placeholder="What's on your mind?"
-            placeholderTextColor={colors.light.textSecondary}
-            value={content}
-            onChangeText={setContent}
-            multiline
-            textAlignVertical="top"
-            autoFocus
-          />
+        {/* Content input */}
+        <TextInput
+          style={styles.contentInput}
+          placeholder="What's on your mind?"
+          placeholderTextColor={colors.light.textSecondary}
+          value={content}
+          onChangeText={setContent}
+          multiline
+          textAlignVertical="top"
+          autoFocus
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

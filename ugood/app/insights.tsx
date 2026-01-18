@@ -7,14 +7,14 @@ import {
   RefreshControl,
   ActivityIndicator,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useUserStore } from '../store/userStore';
 import { useJournalStore, JournalEntry } from '../store/journalStore';
 import { supabase } from '../services/supabase';
 import { getEntryInsights } from '../services/aiProcessor';
-import InsightCard from '../components/InsightCard';
 import GradientHeader from '../components/GradientHeader';
-import { colors, gradients } from '../utils/theme';
+import { colors, gradients, borderRadius, shadows } from '../utils/theme';
 import { formatDate } from '../utils/format';
 
 interface Insight {
@@ -85,13 +85,14 @@ export default function InsightsScreen() {
   return (
     <ScrollView
       style={styles.container}
+      contentContainerStyle={styles.scrollContent}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
       <GradientHeader
-        title="Insights"
-        subtitle="Lessons from your journey"
+        title="What Your Journal Noticed"
+        subtitle="Patterns and discoveries from your writing"
         gradient={gradients.primary}
       />
 
@@ -102,14 +103,15 @@ export default function InsightsScreen() {
           </View>
         ) : insights.length === 0 ? (
           <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No insights yet</Text>
+            <Ionicons name="sparkles-outline" size={64} color={colors.light.textSecondary} />
+            <Text style={styles.emptyText}>Nothing noticed yet</Text>
             <Text style={styles.emptySubtext}>
-              Start journaling to receive AI-generated insights!
+              Your journal will start noticing patterns and discoveries as you write more!
             </Text>
           </View>
         ) : (
           <>
-            <Text style={styles.sectionTitle}>All Lessons</Text>
+            <Text style={styles.sectionTitle}>Things Your Journal Noticed</Text>
             {insights.map((insight) => (
               <View key={insight.id} style={styles.insightItem}>
                 {insight.entry && (
@@ -117,11 +119,15 @@ export default function InsightsScreen() {
                     {formatDate(insight.entry.created_at)}
                   </Text>
                 )}
-                <InsightCard
-                  title="Lesson Learned"
-                  content={insight.lesson || 'No lesson available'}
-                  gradient={gradients.secondary}
-                />
+                <View style={styles.insightCard}>
+                  <View style={styles.insightCardHeader}>
+                    <Ionicons name="bulb-outline" size={20} color="#0C4A6E" />
+                    <Text style={styles.insightCardTitle}>Your Journal Noticed...</Text>
+                  </View>
+                  <Text style={styles.insightCardContent}>
+                    {insight.lesson || 'Keep writing to discover more patterns!'}
+                  </Text>
+                </View>
               </View>
             ))}
           </>
@@ -136,11 +142,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.light.background,
   },
+  scrollContent: {
+    paddingBottom: 40,
+  },
   content: {
     padding: 20,
   },
   sectionTitle: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.light.text,
     marginBottom: 16,
@@ -154,6 +163,28 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     fontWeight: '500',
   },
+  insightCard: {
+    backgroundColor: '#E0F2FE',
+    borderRadius: borderRadius.lg,
+    padding: 20,
+  },
+  insightCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+  },
+  insightCardTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#0C4A6E',
+  },
+  insightCardContent: {
+    fontSize: 16,
+    color: '#0C4A6E',
+    fontStyle: 'italic',
+    lineHeight: 24,
+  },
   loadingContainer: {
     padding: 40,
     alignItems: 'center',
@@ -166,12 +197,14 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: colors.light.text,
+    marginTop: 16,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 16,
     color: colors.light.textSecondary,
     textAlign: 'center',
+    lineHeight: 22,
   },
 });
 

@@ -7,6 +7,7 @@ import ThreeDotMenu from './ThreeDotMenu';
 interface EntryCardProps {
   entry: {
     id: string;
+    title: string;
     content: string;
     mood: string;
     created_at: string;
@@ -24,13 +25,10 @@ export default function EntryCard({
   onViewLesson,
   onDelete,
 }: EntryCardProps) {
-  // Extract title and preview from content
-  const parts = entry.content.split('\n\n');
-  const title = parts[0] || 'Untitled Entry';
-  const bodyContent = parts.length > 1 ? parts.slice(1).join(' ') : entry.content;
-  const preview = bodyContent.length > 100
-    ? bodyContent.substring(0, 100) + '...'
-    : bodyContent;
+  // Use entry.title and entry.content directly
+  const preview = entry.content.length > 100
+    ? entry.content.substring(0, 100) + '...'
+    : entry.content;
 
   return (
     <TouchableOpacity
@@ -46,7 +44,7 @@ export default function EntryCard({
           onDelete={onDelete}
         />
       </View>
-      <Text style={styles.title} numberOfLines={1}>{title}</Text>
+      <Text style={styles.title} numberOfLines={1}>{entry.title || 'Untitled Entry'}</Text>
       <Text style={styles.preview} numberOfLines={3}>{preview}</Text>
     </TouchableOpacity>
   );
@@ -85,5 +83,3 @@ const styles = StyleSheet.create({
     lineHeight: 22,
   },
 });
-
-

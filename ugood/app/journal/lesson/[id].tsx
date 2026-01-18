@@ -6,15 +6,22 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  TouchableOpacity,
 } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
+import { useJournalStore } from '../../../store/journalStore'; // Import store to get entries
 import { getEntryInsights } from '../../../services/aiProcessor';
-import InsightCard from '../../../components/InsightCard';
 import GradientHeader from '../../../components/GradientHeader';
-import { colors, gradients, borderRadius } from '../../../utils/theme';
+import { colors, gradients, shadows } from '../../../utils/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function LessonScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  // Find the entry content from the store
+  const { entries } = useJournalStore();
+  const entry = entries.find(e => e.id === id);
+
   const [insights, setInsights] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,7 +32,6 @@ export default function LessonScreen() {
 
   const loadInsights = async () => {
     if (!id) return;
-
     setLoading(true);
     try {
       const data = await getEntryInsights(id);
@@ -47,108 +53,179 @@ export default function LessonScreen() {
     return (
       <View style={styles.container}>
         <GradientHeader
-          title="AI Insights"
-          subtitle="Analyzing your entry..."
+          title="From Your Past Self"
+          subtitle="Reading your entry..."
           gradient={gradients.primary}
         />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.light.primary} />
-          <Text style={styles.loadingText}>Generating insights...</Text>
+          <Text style={styles.loadingText}>Connecting to your past self...</Text>
         </View>
       </View>
     );
   }
 
-  if (!insights) {
-    return (
-      <View style={styles.container}>
-        <GradientHeader
-          title="AI Insights"
-          subtitle="No insights available"
-          gradient={gradients.primary}
-        />
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>
-            Insights are still being generated. Please check back in a moment.
-          </Text>
-        </View>
-      </View>
-    );
-  }
+  // If entry didn't load from store for some reason
+  const entryText = entry?.content || "Could not load original entry text.";
 
   return (
-    <ScrollView
-      style={styles.container}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
+    <View style={styles.container}>
       <GradientHeader
-        title="AI Insights"
-        subtitle="Learnings from your entry"
+        title="From Your Past Self"
+        subtitle="A note on what you wrote"
         gradient={gradients.primary}
       />
 
-      <View style={styles.content}>
-        <InsightCard
-          title="Summary"
-          content={insights.summary || 'No summary available'}
-          gradient={gradients.primary}
-        />
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* 1. The Handwritten Note (Past Self) */}
+        {insights && (
+          <View style={styles.noteContainer}>
+            <View style={styles.noteHeader}>
+              <Ionicons name="pencil" size={18} color="#92400E" />
+              <Text style={styles.noteTitle}>I noticed something...</Text>
+            </View>
+            <Text style={styles.handwrittenText}>
+              "{insights.lesson || "I noticed a pattern in your writing here."}"
+            </Text>
+          </View>
+        )}
 
-        <InsightCard
-          title="Lesson Learned"
-          content={insights.lesson || 'No lesson available'}
-          gradient={gradients.secondary}
-        />
+        {/* 2. The Entry Context */}
+        <View style={styles.entryContainer}>
+          <Text style={styles.entryLabel}>YOUR ENTRY</Text>
+          <View style={styles.paperSheet}>
+            <Text style={styles.entryText}>{entryText}</Text>
+          </View>
+        </View>
 
-        <InsightCard
-          title="Mood Analysis"
-          content={insights.moodAnalysis || 'No mood analysis available'}
-          gradient={gradients.cool}
-        />
+        {/* 3. Future Action */}
+        {insights?.reflection && (
+          <View style={styles.stickyNote}>
+            <View style={styles.pin} />
+            <Text style={styles.stickyTitle}>Try this tomorrow:</Text>
+            <Text style={styles.stickyText}>{insights.reflection}</Text>
+          </View>
+        )}
 
-        <InsightCard
-          title="Reflection Prompt"
-          content={insights.reflectionPrompt || 'No reflection prompt available'}
-          gradient={gradients.warm}
-        />
-      </View>
-    </ScrollView>
+        <View style={{ height: 40 }} />
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.light.background,
-  },
-  content: {
-    padding: 20,
+    backgroundColor: '#F3F4F6', // Light gray bg
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    padding: 40,
   },
   loadingText: {
     marginTop: 16,
-    fontSize: 16,
     color: colors.light.textSecondary,
+    fontSize: 16,
   },
-  emptyContainer: {
+  scrollView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 40,
   },
-  emptyText: {
-    fontSize: 16,
+  scrollContent: {
+    padding: 20,
+    gap: 24,
+  },
+  // handwritten note
+  noteContainer: {
+    backgroundColor: '#FEF3C7', // Amber-100 (Post-it / Note feel)
+    padding: 20,
+    borderRadius: 2,
+    borderLeftWidth: 4,
+    borderLeftColor: '#D97706', // Amber-600
+    ...shadows.sm,
+    transform: [{ rotate: '-1deg' }], // Slight tilt for organic feel
+  },
+  noteHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  noteTitle: {
+    color: '#92400E', // Amber-800
+    fontWeight: 'bold',
+    fontSize: 14,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  handwrittenText: {
+    fontSize: 18,
+    color: '#4B5563',
+    fontStyle: 'italic', // Fallback for handwriting font
+    lineHeight: 28,
+    fontFamily: 'serif',
+  },
+  // Entry
+  entryContainer: {
+    gap: 8,
+  },
+  entryLabel: {
+    fontSize: 12,
     color: colors.light.textSecondary,
-    textAlign: 'center',
+    fontWeight: '600',
+    letterSpacing: 1,
+    marginLeft: 4,
+  },
+  paperSheet: {
+    backgroundColor: '#FFFFFF',
+    padding: 24,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    ...shadows.sm,
+  },
+  entryText: {
+    fontSize: 16,
+    color: '#1F2937', // Gray-800
+    lineHeight: 26,
+    fontFamily: 'serif', // Book feel
+  },
+  // Sticky Note
+  stickyNote: {
+    backgroundColor: '#D1FAE5', // Emerald-100
+    padding: 20,
+    borderRadius: 2,
+    position: 'relative',
+    marginTop: 10,
+    ...shadows.md,
+    transform: [{ rotate: '1deg' }],
+  },
+  pin: {
+    position: 'absolute',
+    top: -10,
+    alignSelf: 'center',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#EF4444', // Red pin
+    ...shadows.sm,
+  },
+  stickyTitle: {
+    fontWeight: 'bold',
+    color: '#065F46', // Emerald-800
+    marginBottom: 4,
+    textTransform: 'uppercase',
+    fontSize: 12,
+  },
+  stickyText: {
+    color: '#064E3B',
+    fontSize: 16,
     lineHeight: 24,
   },
 });
-
-

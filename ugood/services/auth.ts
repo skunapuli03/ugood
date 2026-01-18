@@ -1,7 +1,10 @@
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as AuthSession from 'expo-auth-session';
+import * as WebBrowser from 'expo-web-browser';
 import { Platform } from 'react-native';
 import { supabase } from './supabase';
+
+WebBrowser.maybeCompleteAuthSession();
 
 export const signInWithApple = async () => {
   if (Platform.OS !== 'ios') {
@@ -37,32 +40,35 @@ export const signInWithApple = async () => {
 
 export const signInWithGoogle = async () => {
   try {
-    const redirectTo = AuthSession.makeRedirectUri({ useProxy: true });
-    
+    const redirectTo = AuthSession.makeRedirectUri();
+
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo,
+        skipBrowserRedirect: true,
       },
     });
 
     if (error) throw error;
 
-    // For web, we need to handle the redirect
-    if (Platform.OS === 'web' && data.url) {
-      const result = await AuthSession.startAsync({
-        authUrl: data.url,
-        returnUrl: redirectTo,
-      });
+    const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
 
-      if (result.type === 'success') {
-        const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
-        return { data: sessionData, error: sessionError };
+    if (result.type === 'success') {
+      const { url } = result;
+      // Extract params from hash (Supabase uses # for tokens)
+      const params = new URLSearchParams(url.split('#')[1] || url.split('?')[1]);
+      const access_token = params.get('access_token');
+      const refresh_token = params.get('refresh_token');
+
+      if (access_token && refresh_token) {
+        return await supabase.auth.setSession({ access_token, refresh_token });
       }
     }
 
-    return { data, error: null };
+    return { data: null, error: new Error('Google Sign In was not completed') };
   } catch (error: any) {
+    console.error('Google Sign In Error:', error);
     return { data: null, error };
   }
 };

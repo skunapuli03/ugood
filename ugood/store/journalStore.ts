@@ -6,6 +6,7 @@ export interface JournalEntry {
   id: string;
   user_id: string;
   content: string;
+  title: string;
   mood: string;
   created_at: string;
   updated_at: string;
@@ -16,8 +17,8 @@ interface JournalState {
   loading: boolean;
   error: string | null;
   fetchEntries: (userId: string) => Promise<void>;
-  createEntry: (userId: string, content: string, mood: string) => Promise<JournalEntry | null>;
-  updateEntry: (entryId: string, content: string, mood: string) => Promise<boolean>;
+  createEntry: (userId: string, title: string, content: string, mood: string) => Promise<JournalEntry | null>;
+  updateEntry: (entryId: string, title: string, content: string, mood: string) => Promise<boolean>;
   deleteEntry: (entryId: string) => Promise<boolean>;
   getEntry: (entryId: string) => JournalEntry | null;
   clearEntries: () => void;
@@ -44,11 +45,12 @@ export const useJournalStore = create<JournalState>((set, get) => ({
       set({ error: error.message, loading: false });
     }
   },
-  createEntry: async (userId: string, content: string, mood: string) => {
+  createEntry: async (userId: string, title: string, content: string, mood: string) => {
     set({ loading: true, error: null });
     try {
       const entryData = {
         user_id: userId,
+        title,
         content,
         mood,
       };
@@ -70,7 +72,7 @@ export const useJournalStore = create<JournalState>((set, get) => ({
 
       // Process with AI in the background
       if (data) {
-        processEntryWithAI(data.id, content, mood, userId).catch((err) => {
+        processEntryWithAI(data.id, `${title}\n\n${content}`, mood, userId).catch((err) => {
           console.error('Error processing entry with AI:', err);
         });
       }
@@ -89,12 +91,13 @@ export const useJournalStore = create<JournalState>((set, get) => ({
       return null;
     }
   },
-  updateEntry: async (entryId: string, content: string, mood: string) => {
+  updateEntry: async (entryId: string, title: string, content: string, mood: string) => {
     set({ loading: true, error: null });
     try {
       const { data, error } = await supabase
         .from('journals')
         .update({
+          title,
           content,
           mood,
           updated_at: new Date().toISOString(),
