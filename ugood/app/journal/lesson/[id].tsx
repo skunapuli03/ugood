@@ -8,7 +8,7 @@ import {
   RefreshControl,
   TouchableOpacity,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, router } from 'expo-router';
 import { useJournalStore } from '../../../store/journalStore'; // Import store to get entries
 import { getEntryInsights } from '../../../services/aiProcessor';
 import GradientHeader from '../../../components/GradientHeader';
@@ -36,6 +36,7 @@ export default function LessonScreen() {
     try {
       const data = await getEntryInsights(id);
       setInsights(data);
+      console.log('Loaded insights:', data);
     } catch (error: any) {
       console.error('Error loading insights:', error);
     } finally {
@@ -52,14 +53,17 @@ export default function LessonScreen() {
   if (loading && !insights) {
     return (
       <View style={styles.container}>
+        
         <GradientHeader
           title="From Your Past Self"
           subtitle="Reading your entry..."
           gradient={gradients.primary}
         />
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.light.primary} />
-          <Text style={styles.loadingText}>Connecting to your past self...</Text>
+            <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+            <Text style={styles.loadingText}>Connecting to your past self...</Text>
+            <Text style={styles.loadingText}>The AI model may still be loading.</Text>
+            
         </View>
       </View>
     );
@@ -70,6 +74,9 @@ export default function LessonScreen() {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Ionicons name="arrow-back" size={24} color="#FFFFFF" />
+      </TouchableOpacity>
       <GradientHeader
         title="From Your Past Self"
         subtitle="A note on what you wrote"
@@ -105,11 +112,11 @@ export default function LessonScreen() {
         </View>
 
         {/* 3. Future Action */}
-        {insights?.reflection && (
+        {insights?.reflectionPrompt && (
           <View style={styles.stickyNote}>
             <View style={styles.pin} />
             <Text style={styles.stickyTitle}>Try this tomorrow:</Text>
-            <Text style={styles.stickyText}>{insights.reflection}</Text>
+            <Text style={styles.stickyText}>{insights.reflectionPrompt}</Text>
           </View>
         )}
 
@@ -123,6 +130,13 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F3F4F6', // Light gray bg
+  },
+  backButton: {
+    position: 'absolute',
+    top: 50,
+    left: 16,
+    zIndex: 10,
+    padding: 8,
   },
   loadingContainer: {
     flex: 1,

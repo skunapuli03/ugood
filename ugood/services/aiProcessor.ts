@@ -1,4 +1,5 @@
-import { generateInsights } from './gemini';
+import { generateInsights } from './offlineAI';
+import { useJournalStore } from '../store/journalStore';
 import { supabase } from './supabase';
 
 export interface EntryInsights {
@@ -15,10 +16,13 @@ export const processEntryWithAI = async (
   userId: string
 ): Promise<EntryInsights> => {
   try {
-    // Generate insights using Gemini
-    const insights = await generateInsights(content, mood);
+    // Get past entries for context                                     
+    const entries = useJournalStore.getState().entries;
 
-    // Save insights to Supabase
+    // Generate insights using local LLM with past context              
+    const insights = await generateInsights(content, mood, entries);
+
+    // Save insights to Supabase (unchanged)                            
     const { error } = await supabase
       .from('insights')
       .upsert({
@@ -36,7 +40,6 @@ export const processEntryWithAI = async (
 
     if (error) {
       console.error('Error saving insights:', error);
-      // Still return insights even if save fails
     }
 
     return insights;
