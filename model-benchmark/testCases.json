@@ -1,0 +1,580 @@
+{
+  "version": "2.0",
+  "description": "Journal entry test cases with ground truth for model validation",
+  "expectedOutputSchema": {
+    "summary": "2-3 sentence summary of the entry",
+    "lesson": "Key insight or lesson learned",
+    "moodAnalysis": "Analysis of emotional state",
+    "reflectionPrompt": "Thoughtful question for deeper reflection"
+  },
+  "testCases": [
+    {
+      "id": "TC001",
+      "name": "Work Promotion - Pure Positive",
+      "category": "positive",
+      "difficulty": "easy",
+      "input": {
+        "content": "Today was amazing! I got promoted at work after months of hard work. My team surprised me with a small celebration and my manager said she's proud of my growth. I feel so grateful for this opportunity.",
+        "mood": "😊",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["promoted", "work"],
+          "mustNotContain": ["sad", "negative", "disappointed"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer received a well-deserved promotion at work after months of dedication. Their team celebrated the achievement, and they feel grateful for the recognition and opportunity."
+        },
+        "lesson": {
+          "acceptableThemes": ["hard work pays off", "perseverance leads to success", "dedication is rewarded", "growth comes from effort"],
+          "expectedTone": "encouraging",
+          "idealResponse": "Consistent effort and dedication eventually lead to recognition and reward."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["happy", "grateful", "proud", "excited"],
+          "unacceptableEmotions": ["sad", "anxious", "stressed"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer is experiencing joy, gratitude, and pride. There's a sense of accomplishment and appreciation for both the achievement and the support from colleagues."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["future goals", "what enabled success", "gratitude", "next steps", "celebrating wins"],
+          "idealResponse": "What specific habits or actions contributed most to this success, and how can you continue building on them?"
+        }
+      }
+    },
+    {
+      "id": "TC002",
+      "name": "Work Stress - Pure Negative",
+      "category": "negative",
+      "difficulty": "easy",
+      "input": {
+        "content": "I'm completely overwhelmed. Deadlines are piling up and I don't know how I'll get everything done. My boss added another project today and I almost broke down in the meeting. I need to find a way to cope.",
+        "mood": "😔",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["overwhelmed", "deadlines"],
+          "mustNotContain": ["happy", "excited", "great"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer is feeling overwhelmed by mounting work deadlines and additional projects. They nearly broke down during a meeting and are seeking ways to cope with the stress."
+        },
+        "lesson": {
+          "acceptableThemes": ["setting boundaries", "asking for help", "prioritization", "self-care", "stress management", "communication"],
+          "expectedTone": "supportive",
+          "idealResponse": "Recognizing when you're overwhelmed is the first step—it's okay to ask for help or push back on unrealistic expectations."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["stressed", "overwhelmed", "anxious", "frustrated"],
+          "unacceptableEmotions": ["happy", "excited", "content"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer is experiencing significant stress and overwhelm. There are signs of anxiety about meeting expectations and a need for emotional support."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["priorities", "support systems", "boundaries", "coping strategies", "what can be delegated"],
+          "idealResponse": "What is one task you could delegate or postpone to give yourself some breathing room?"
+        }
+      }
+    },
+    {
+      "id": "TC003",
+      "name": "Relationship Conflict",
+      "category": "negative",
+      "difficulty": "medium",
+      "input": {
+        "content": "Had a big argument with my best friend today. We said things we didn't mean and now I feel terrible. I don't know if I should reach out first or wait. This friendship means everything to me.",
+        "mood": "😔",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["argument", "friend"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer had a significant argument with their best friend where hurtful things were said. They're now feeling remorseful and uncertain about how to repair the relationship."
+        },
+        "lesson": {
+          "acceptableThemes": ["communication", "vulnerability", "taking initiative", "forgiveness", "valuing relationships", "apologizing"],
+          "expectedTone": "supportive",
+          "idealResponse": "When a relationship matters, taking the first step to reconcile shows strength and love, not weakness."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["sad", "regretful", "conflicted", "worried", "hurt"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer is experiencing regret and emotional turmoil. They value this friendship deeply and the conflict is causing significant distress."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["reaching out", "what you really meant", "how to apologize", "what the friendship means"],
+          "idealResponse": "If you could say one thing to your friend right now without fear of judgment, what would it be?"
+        }
+      }
+    },
+    {
+      "id": "TC004",
+      "name": "Bittersweet Job Change",
+      "category": "mixed",
+      "difficulty": "medium",
+      "input": {
+        "content": "Last day at my old job today. I'm excited about the new opportunity but also sad to leave my colleagues. We've been through so much together. Change is hard but necessary for growth.",
+        "mood": "😐",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["job", "leaving"],
+          "expectedSentiment": "mixed",
+          "idealResponse": "The writer is marking their final day at a job, feeling a mix of excitement about new opportunities and sadness about leaving valued colleagues behind."
+        },
+        "lesson": {
+          "acceptableThemes": ["embracing change", "growth requires discomfort", "honoring the past while moving forward", "transitions are part of life"],
+          "expectedTone": "balanced",
+          "idealResponse": "Growth often requires leaving familiar comfort behind, and it's healthy to honor both the excitement of the new and the grief of what we leave."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["bittersweet", "excited", "sad", "nostalgic", "hopeful"],
+          "expectedSentiment": "mixed",
+          "idealResponse": "The writer is experiencing a complex blend of emotions—excitement and anticipation mixed with sadness and nostalgia. This bittersweet state is natural for significant life transitions."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["lessons from old job", "what to carry forward", "staying connected", "embracing new chapter"],
+          "idealResponse": "What's one thing you learned from your colleagues that you want to carry into your new role?"
+        }
+      }
+    },
+    {
+      "id": "TC005",
+      "name": "Nature Mindfulness",
+      "category": "positive",
+      "difficulty": "easy",
+      "input": {
+        "content": "Spent the morning hiking in the mountains. The fresh air and beautiful views helped clear my mind. I realized I need to do this more often - nature really grounds me.",
+        "mood": "😊",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["hiking", "nature"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer spent a refreshing morning hiking in the mountains. The experience provided mental clarity and reinforced their need to connect with nature more regularly."
+        },
+        "lesson": {
+          "acceptableThemes": ["nature heals", "self-care", "mental clarity", "making time for what matters", "mindfulness"],
+          "expectedTone": "positive",
+          "idealResponse": "Regular connection with nature is essential for mental well-being and provides perspective that's hard to find elsewhere."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["peaceful", "refreshed", "grateful", "grounded", "calm"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer feels peaceful, refreshed, and grounded. There's a sense of clarity and gratitude for the healing power of nature."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["scheduling outdoor time", "what nature provides", "mindfulness practices"],
+          "idealResponse": "How could you incorporate more moments of connection with nature into your weekly routine?"
+        }
+      }
+    },
+    {
+      "id": "TC006",
+      "name": "Minimal Entry - Positive",
+      "category": "short",
+      "difficulty": "hard",
+      "input": {
+        "content": "Good day. Felt happy.",
+        "mood": "😊",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer had a positive day and experienced happiness.",
+          "notes": "Should not over-interpret or add details not in the entry"
+        },
+        "lesson": {
+          "acceptableThemes": ["appreciating simple joys", "recognizing good days", "gratitude for ordinary moments"],
+          "expectedTone": "positive",
+          "idealResponse": "Sometimes the simplest acknowledgment of a good day is a powerful practice in gratitude."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["happy", "content", "positive"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer is in a positive emotional state, feeling happy and content.",
+          "notes": "Should not fabricate emotions or details not present"
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["what made it good", "capturing the feeling", "gratitude"],
+          "idealResponse": "What small moment today contributed most to your happiness?"
+        }
+      }
+    },
+    {
+      "id": "TC007",
+      "name": "Minimal Entry - Negative",
+      "category": "short",
+      "difficulty": "hard",
+      "input": {
+        "content": "Rough day. Feeling down.",
+        "mood": "😔",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer had a difficult day and is feeling low.",
+          "notes": "Should not over-interpret or assume specific causes"
+        },
+        "lesson": {
+          "acceptableThemes": ["bad days happen", "self-compassion", "feelings are temporary", "it's okay to not be okay"],
+          "expectedTone": "supportive",
+          "idealResponse": "Acknowledging difficult feelings is the first step toward processing them—it's okay to have rough days."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["sad", "down", "low", "difficult"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer is experiencing a low mood and having a challenging emotional day.",
+          "notes": "Should provide compassion without assuming causes"
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["self-care", "support", "what might help", "being gentle with yourself"],
+          "idealResponse": "What's one small thing you could do to take care of yourself right now?"
+        }
+      }
+    },
+    {
+      "id": "TC008",
+      "name": "Detailed Life Reflection",
+      "category": "long",
+      "difficulty": "medium",
+      "input": {
+        "content": "I've been thinking a lot about where I am in life. Five years ago, I was in a completely different place - struggling with my career, unsure about relationships, and honestly quite lost. Today, I look at how far I've come and I'm proud. I have a job I love, surrounded by people who support me, and I've learned so much about myself. The journey wasn't easy. There were nights I cried myself to sleep, moments I wanted to give up, and times I questioned everything. But each challenge taught me something. I learned that failure isn't the end - it's feedback. I learned that asking for help isn't weakness - it's wisdom. I learned that growth often feels uncomfortable but it's always worth it. Looking ahead, I still have goals I want to achieve. I want to travel more, learn a new language, maybe write that book I've always dreamed about. But for today, I just want to appreciate how far I've come.",
+        "mood": "😊",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["growth", "journey"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer reflects on five years of personal transformation, from feeling lost to finding career satisfaction and self-understanding. Despite past struggles, they feel proud of their progress and hopeful about future goals."
+        },
+        "lesson": {
+          "acceptableThemes": ["growth through struggle", "celebrating progress", "resilience", "self-reflection", "failure as feedback"],
+          "expectedTone": "positive",
+          "idealResponse": "True growth often comes from our most difficult moments, and taking time to acknowledge how far we've come is as important as striving for what's next."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["proud", "grateful", "reflective", "hopeful", "content"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer is experiencing deep gratitude and pride in their journey. There's a mature sense of contentment with the present while maintaining healthy hope for the future."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["lessons learned", "future goals", "self-growth", "gratitude practices"],
+          "idealResponse": "Which of your past challenges do you now see as the most valuable teacher, and why?"
+        }
+      }
+    },
+    {
+      "id": "TC009",
+      "name": "Gym Progress with Context",
+      "category": "context",
+      "difficulty": "medium",
+      "input": {
+        "content": "Went to the gym again today. Third time this week! I'm actually starting to enjoy it.",
+        "mood": "😊",
+        "context": [
+          {
+            "id": "ctx-1",
+            "content": "Started going to the gym. It was hard and I wanted to quit after 10 minutes.",
+            "mood": "😐",
+            "created_at": "2024-01-10T10:00:00Z"
+          },
+          {
+            "id": "ctx-2",
+            "content": "Second gym session. Still tough but I completed the whole workout.",
+            "mood": "😊",
+            "created_at": "2024-01-12T10:00:00Z"
+          }
+        ]
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["gym", "third"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer completed their third gym session of the week and is beginning to enjoy the habit. This marks clear progress from initially wanting to quit after just 10 minutes.",
+          "contextAware": true
+        },
+        "lesson": {
+          "acceptableThemes": ["consistency builds enjoyment", "habits take time", "progress over perfection", "perseverance pays off"],
+          "expectedTone": "positive",
+          "idealResponse": "Pushing through initial resistance often leads to unexpected enjoyment—what starts as a struggle can become something you look forward to."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["proud", "accomplished", "motivated", "happy"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer feels accomplished and genuinely pleased. There's growing motivation as the initial struggle has transformed into emerging enjoyment.",
+          "contextAware": true
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["what changed", "maintaining momentum", "other habits to build", "fitness goals"],
+          "idealResponse": "What shifted in your mindset from wanting to quit to actually enjoying the gym?"
+        }
+      }
+    },
+    {
+      "id": "TC010",
+      "name": "Anxiety Recovery with Context",
+      "category": "context",
+      "difficulty": "medium",
+      "input": {
+        "content": "Feeling much better today. The anxiety is finally subsiding and I can think clearly again.",
+        "mood": "😊",
+        "context": [
+          {
+            "id": "ctx-1",
+            "content": "Couldn't sleep last night. Anxiety is through the roof about the presentation tomorrow.",
+            "mood": "😔",
+            "created_at": "2024-01-14T22:00:00Z"
+          },
+          {
+            "id": "ctx-2",
+            "content": "Presentation done. It went okay but I'm still feeling the aftermath of all that stress.",
+            "mood": "😐",
+            "created_at": "2024-01-15T18:00:00Z"
+          }
+        ]
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["better", "anxiety"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer is recovering from a period of intense anxiety related to a presentation. They're experiencing relief as clarity returns after the stressful event has passed.",
+          "contextAware": true
+        },
+        "lesson": {
+          "acceptableThemes": ["anxiety is temporary", "recovery happens", "you can get through hard things", "stress subsides"],
+          "expectedTone": "positive",
+          "idealResponse": "Even the most overwhelming anxiety eventually passes—you have the resilience to weather these storms."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["relieved", "calm", "hopeful", "recovering"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer is experiencing relief and returning clarity. There's a sense of recovery and emerging calm after the anxiety storm.",
+          "contextAware": true
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["coping strategies", "what helped", "preparing for next time", "self-care"],
+          "idealResponse": "What helped you most during this anxious period, and how might you use that knowledge for future stressful situations?"
+        }
+      }
+    },
+    {
+      "id": "TC011",
+      "name": "Neutral Routine Day",
+      "category": "edge",
+      "difficulty": "hard",
+      "input": {
+        "content": "Went to the store. Bought groceries. Came home. Made dinner. Watched TV. Went to bed.",
+        "mood": "😐",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "expectedSentiment": "neutral",
+          "idealResponse": "The writer documented a routine day of errands and domestic activities without notable events.",
+          "notes": "Should not inject positivity or negativity that isn't there"
+        },
+        "lesson": {
+          "acceptableThemes": ["routine has value", "ordinary days matter", "presence in daily life", "simple pleasures"],
+          "expectedTone": "neutral",
+          "idealResponse": "There's meaning in documenting even ordinary days—routine provides structure and stability."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["neutral", "calm", "content", "ordinary"],
+          "expectedSentiment": "neutral",
+          "idealResponse": "The writer appears to be in a neutral, calm state. The day was uneventful but stable.",
+          "notes": "Should not assume boredom or dissatisfaction unless explicitly stated"
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["finding meaning in routine", "small joys", "presence"],
+          "idealResponse": "Was there a small moment today that brought you a sense of contentment or peace?"
+        }
+      }
+    },
+    {
+      "id": "TC012",
+      "name": "Parenting Mixed Emotions",
+      "category": "mixed",
+      "difficulty": "medium",
+      "input": {
+        "content": "The kids were absolutely wild today - tantrums, mess everywhere, zero cooperation. But then at bedtime, my daughter hugged me and said I'm the best parent ever. Those moments make all the chaos worth it.",
+        "mood": "😐",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["kids"],
+          "expectedSentiment": "mixed",
+          "idealResponse": "The writer had a chaotic day with uncooperative children but found redemption in a tender bedtime moment when their daughter expressed love and appreciation."
+        },
+        "lesson": {
+          "acceptableThemes": ["small moments matter", "patience in parenting", "love redeems chaos", "perspective"],
+          "expectedTone": "balanced",
+          "idealResponse": "The challenging moments of parenting are often balanced by small, profound expressions of love that make the struggle worthwhile."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["exhausted", "fulfilled", "loved", "grateful"],
+          "expectedSentiment": "mixed",
+          "idealResponse": "The writer experienced exhaustion and frustration from the day's chaos, but these were transformed by a moment of deep connection and love."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["meaningful moments", "patience strategies", "self-compassion as a parent"],
+          "idealResponse": "How do you remind yourself of these precious moments during the more difficult times?"
+        }
+      }
+    },
+    {
+      "id": "TC013",
+      "name": "Self-Improvement Awareness",
+      "category": "edge",
+      "difficulty": "medium",
+      "input": {
+        "content": "I noticed I've been procrastinating a lot lately. Every time I need to do something important, I find distractions. Today I caught myself doing it and forced myself to focus. Small win but it matters.",
+        "mood": "😐",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["procrastinating", "focus"],
+          "expectedSentiment": "mixed",
+          "idealResponse": "The writer has become aware of their procrastination patterns and today managed to catch and overcome the habit, viewing it as a meaningful small victory."
+        },
+        "lesson": {
+          "acceptableThemes": ["self-awareness is powerful", "small wins matter", "progress over perfection", "catching yourself is growth"],
+          "expectedTone": "positive",
+          "idealResponse": "Self-awareness is the first step to change—catching yourself in a pattern is already a significant achievement."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["self-aware", "determined", "hopeful", "accomplished"],
+          "expectedSentiment": "mixed",
+          "idealResponse": "The writer shows healthy self-awareness and determination. There's a realistic optimism about making progress through small, conscious efforts."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["procrastination triggers", "strategies that work", "building on wins"],
+          "idealResponse": "What typically triggers your procrastination, and what helped you break through it today?"
+        }
+      }
+    },
+    {
+      "id": "TC014",
+      "name": "Grief and Loss",
+      "category": "negative",
+      "difficulty": "hard",
+      "input": {
+        "content": "It's been a month since grandma passed. I thought I'd be feeling better by now but the waves of sadness still hit unexpectedly. Found her recipe cards today and just broke down. I miss her so much.",
+        "mood": "😔",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["grandma", "miss"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer is one month into grieving their grandmother's passing. Finding her recipe cards triggered a wave of sadness, and they're struggling with the ongoing nature of grief."
+        },
+        "lesson": {
+          "acceptableThemes": ["grief has no timeline", "it's okay to grieve", "memories keep loved ones alive", "healing isn't linear"],
+          "expectedTone": "supportive",
+          "idealResponse": "Grief doesn't follow a schedule—waves of sadness are natural and show the depth of love shared.",
+          "notes": "Should NOT be dismissive or tell them to move on"
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["sad", "grieving", "missing", "sorrowful"],
+          "unacceptableEmotions": ["happy", "excited"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer is deep in grief, experiencing waves of profound sadness. The pain speaks to a meaningful relationship and the difficulty of loss."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["honoring memory", "what she taught", "keeping connection", "self-compassion in grief"],
+          "idealResponse": "What's one way you might honor your grandmother's memory using those recipe cards?"
+        }
+      }
+    },
+    {
+      "id": "TC015",
+      "name": "Creativity and Flow",
+      "category": "positive",
+      "difficulty": "easy",
+      "input": {
+        "content": "Had an amazing creative session today. Lost track of time while painting and hours flew by like minutes. I haven't felt this connected to my art in months. This is why I do it.",
+        "mood": "😊",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["creative", "painting"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer experienced a deeply fulfilling creative session while painting, entering a flow state where time seemed to disappear. This reconnected them with their passion for art."
+        },
+        "lesson": {
+          "acceptableThemes": ["flow state is valuable", "creative expression heals", "making time for passion", "reconnecting with purpose"],
+          "expectedTone": "positive",
+          "idealResponse": "Flow states in creative work remind us why we pursue our passions—these moments of deep connection are worth protecting."
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["fulfilled", "connected", "joyful", "inspired"],
+          "expectedSentiment": "positive",
+          "idealResponse": "The writer is experiencing deep fulfillment and reconnection with their creative self. There's joy and a renewed sense of purpose."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["making time for creativity", "what enables flow", "protecting creative space"],
+          "idealResponse": "What conditions helped you reach this flow state, and how can you create them more often?"
+        }
+      }
+    },
+    {
+      "id": "TC016",
+      "name": "Health Anxiety",
+      "category": "negative",
+      "difficulty": "hard",
+      "input": {
+        "content": "Waiting for test results is torture. I keep spiraling into worst-case scenarios. I know I should stay positive but it's hard when your mind keeps going to dark places. Just want this to be over.",
+        "mood": "😔",
+        "context": []
+      },
+      "groundTruth": {
+        "summary": {
+          "mustContain": ["waiting", "results"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer is experiencing intense anxiety while waiting for medical test results. They're struggling with intrusive worst-case thoughts and finding it difficult to stay positive."
+        },
+        "lesson": {
+          "acceptableThemes": ["uncertainty is hard", "you're doing your best", "fear is natural", "waiting is suffering"],
+          "expectedTone": "supportive",
+          "idealResponse": "Waiting for health results is one of the hardest forms of uncertainty—your anxiety is a natural response, not a failure to stay positive.",
+          "notes": "Should validate rather than dismiss the fear"
+        },
+        "moodAnalysis": {
+          "expectedEmotions": ["anxious", "scared", "worried", "suffering"],
+          "expectedSentiment": "negative",
+          "idealResponse": "The writer is experiencing significant health anxiety with intrusive thoughts. There's suffering in the uncertainty and a desperate desire for resolution."
+        },
+        "reflectionPrompt": {
+          "mustBeQuestion": true,
+          "acceptableThemes": ["grounding techniques", "support during waiting", "self-compassion", "what you can control"],
+          "idealResponse": "What's one thing within your control right now that might bring even a small moment of calm?"
+        }
+      }
+    }
+  ]
+}

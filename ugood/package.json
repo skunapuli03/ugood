@@ -8,7 +8,11 @@
     "android": "expo run:android",
     "ios": "expo run:ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test:models": "npx ts-node tests/modelTester.ts",
+    "test:models:all": "npx ts-node tests/modelTester.ts --all",
+    "test:models:gemini": "npx ts-node tests/modelTester.ts --model gemini --live",
+    "test:models:mock": "npx ts-node tests/modelTester.ts --model mock"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.3",
@@ -50,9 +54,12 @@
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@google/generative-ai": "^0.21.0",
+    "@types/node": "^20.10.0",
     "@types/react": "~19.1.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
+    "ts-node": "^10.9.2",
     "typescript": "~5.9.2"
   },
   "private": true

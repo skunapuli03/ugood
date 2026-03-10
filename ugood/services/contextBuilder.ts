@@ -1,6 +1,6 @@
 import { JournalEntry } from '../store/journalStore';
 
-const MAX_CONTEXT_ENTRIES = 5;
+const MAX_CONTEXT_ENTRIES = 3;
 const MAX_ENTRY_LENGTH = 500;
 
 export const buildContext = (

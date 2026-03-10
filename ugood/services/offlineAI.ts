@@ -9,6 +9,10 @@ export interface EntryInsights {
     reflectionPrompt: string;
 }
 
+/**
+ * Generate AI insights for a journal entry using the local LLM.
+ * Uses Qwen 2.5 1.5B by default with ChatML prompt format.
+ */
 export const generateInsights = async (
     entryContent: string,
     mood: string,
@@ -22,75 +26,29 @@ export const generateInsights = async (
             console.log('Model loaded successfully');
         }
 
+        // Build context from relevant past entries
         const relevantEntries = buildContext(entryContent, mood, pastEntries);
         const contextStr = formatContextPrompt(relevantEntries);
 
-        const prompt = `<|system|>
-You are a journal companion. You MUST respond using EXACTLY this format with each section on its own line:
+        // Build ChatML prompt (Qwen format)
+        const prompt = `<|im_start|>system
+You are a compassionate journal companion. Analyze journal entries and provide supportive insights. Always respond with valid JSON only, no other text.<|im_end|>
+<|im_start|>user
+Analyze this journal entry and respond with JSON:
 
-SUMMARY: [2 sentences about the entry]
-LESSON: [1 key insight for the writer]
-MOOD: [brief emotional analysis]
-QUESTION: [reflection question for tomorrow]
+Entry: "${entryContent}"
+Mood: ${mood}${contextStr ? `\n\nPast entries for context:\n${contextStr}` : ''}
 
-Do NOT write paragraphs. Use ONLY the format above with each marker at the start of a new line.
-Use this example as a guide:
-  Example:                                                                
-  SUMMARY: Today was challenging at work. I felt overwhelmed by deadlines.
-  LESSON: Remember to take breaks when feeling stressed.                  
-  MOOD: Anxious but hopeful about tomorrow.                               
-  QUESTION: What is one small thing you can do tomorrow to reduce stress? 
-</s>
-<|user|>
-Journal entry: "${entryContent}"
-Mood: ${mood}
-${contextStr ? `Past context: ${contextStr}` : ''}
+Respond with this exact JSON structure:
+{"summary": "2-3 sentence summary", "lesson": "key insight or lesson", "moodAnalysis": "emotional analysis", "reflectionPrompt": "thoughtful question ending with ?"}<|im_end|>
+<|im_start|>assistant
+{`;
 
-Respond using the exact format specified.
-</s>
-<|assistant|>`;
-        console.log('Generated prompt for LLM:', prompt);
+        console.log('Generated prompt for LLM');
         const response = await generate(prompt);
-        console.log('LLM raw response:', response);
-        // Parse the response - we started with { so prepend it             
-        /*const jsonStr = '{' + response.split('}')[0] + '}';                 
-        console.log('Attempting to parse:', jsonStr);   
-        console.log('end of jsonStr');                    
-        // Find the end of the JSON object                                      
-  const endIndex = jsonStr.lastIndexOf('}');                              
-  const cleanJson = endIndex > 0 ? jsonStr.substring(0, endIndex + 1) :   
-  jsonStr + '"}'; */
-        const insights = parseMarkedResponse(response, mood);
-        return insights;
-        //console.log('Attempting to parse:', cleanJson);
-        // Parse JSON from response                                           
-        /*try {
-            /*let jsonText = response.trim();
-            if (jsonText.startsWith('```json')) {
-                jsonText = jsonText.replace(/```json\n?/g, '').replace(/```\n?/g,
-                    '');
-            } else if (jsonText.startsWith('```')) {
-                jsonText = jsonText.replace(/```\n?/g, '');
-            }
+        console.log('LLM raw response:', response.substring(0, 200));
 
-            const parsed = JSON.parse(cleanJson);
-            return {
-                summary: parsed.summary || 'Entry recorded.',
-                lesson: parsed.lesson || 'Keep journaling to discover more insights.',
-                moodAnalysis: parsed.moodAnalysis || 'You are feeling ${mood}.',
-                reflectionPrompt: parsed.reflectionPrompt || 'What will tomorrow bring?',
-            };
-        } catch (parseError) {
-            console.error('JSON parse from LLM response failed, using fallback.');
-            // Fallback if JSON parsing fails                                   
-            return {
-                summary: 'Your entry has been recorded.',
-                //lesson: response.substring(0, 200),
-                lesson: extractLesson(response) || 'Taking time to reflect is valuable.',
-                moodAnalysis: `You seem to be feeling ${mood}`,
-                reflectionPrompt: 'What made you feel this way today?',
-            };
-        }*/
+        return parseJsonResponse(response, mood);
     } catch (e: any) {
         console.error('generateInsights failed:', e);
         return {
@@ -102,51 +60,45 @@ Respond using the exact format specified.
     }
 };
 
-function parseMarkedResponse(response: string, mood: string):
-    EntryInsights {
-    // Extract content between markers - match until next marker or end
-    const summaryMatch = response.match(/SUMMARY[:\s]*(.+?)(?=LESSON:|MOOD:|QUESTION:|$)/is);
-    console.log('Summary match:', summaryMatch);
-    const lessonMatch = response.match(/LESSON[:\s]*(.+?)(?=MOOD:|QUESTION:|$)/is);
-    console.log('Lesson match:', lessonMatch);
-    const moodMatch = response.match(/MOOD[:\s]*(.+?)(?=QUESTION:|$)/is);
-    console.log('Mood match:', moodMatch);
-    const questionMatch = response.match(/QUESTION[:\s]*(.+?)$/is);
-    console.log('Question match:', questionMatch);
-    // Clean up extracted text
-    const clean = (text: string | undefined) => {
-        if (!text) return null;
-        return text
-            .replace(/^[:\s\d.]+/, '')  // Remove leading colons, spaces, numbers
-            .replace(/\s+/g, ' ')        // Collapse multiple whitespace to single space
-            .trim()
-            .substring(0, 300);
-    };
+/**
+ * Parse JSON response from the LLM.
+ * Uses brace counting to handle nested JSON structures correctly.
+ */
+const parseJsonResponse = (response: string, mood: string): EntryInsights => {
+    try {
+        // Prepend the { we used to prime the response
+        let jsonStr = '{' + response;
 
-    // Also try to extract first sentence as summary if no markers found  
-    const firstSentence = response.split(/[.!?]/)[0]?.trim();
+        // Use brace counting to find the complete JSON object (handles nested braces)
+        let braceCount = 0;
+        let endIdx = -1;
+        for (let i = 0; i < jsonStr.length; i++) {
+            if (jsonStr[i] === '{') braceCount++;
+            if (jsonStr[i] === '}') braceCount--;
+            if (braceCount === 0) {
+                endIdx = i;
+                break;
+            }
+        }
 
-    return {
-        summary: clean(summaryMatch?.[1]) || firstSentence || 'Your thoughts have been captured.',
-        lesson: clean(lessonMatch?.[1]) || extractFirstMeaningful(response,
-            50) || 'Reflection helps us grow.',
-        moodAnalysis: clean(moodMatch?.[1]) || `Your mood today: ${mood}`,
-        reflectionPrompt: clean(questionMatch?.[1]) || 'What will you carry forward from today?',
-    };
-}
+        if (endIdx !== -1) {
+            jsonStr = jsonStr.substring(0, endIdx + 1);
+        }
 
-function extractFirstMeaningful(text: string, minLength: number): string
-    | null {
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length >
-        minLength);
-    return sentences[0]?.trim().substring(0, 200) || null;
-}
-
-function extractLesson(text: string): string | null {
-    // Take first meaningful sentence                                     
-    const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 20);
-    if (sentences.length > 0) {
-        return sentences[0].trim().substring(0, 200);
+        const parsed = JSON.parse(jsonStr);
+        return {
+            summary: parsed.summary || 'Your thoughts have been captured.',
+            lesson: parsed.lesson || 'Reflection helps us grow.',
+            moodAnalysis: parsed.moodAnalysis || parsed.mood || `Your mood today: ${mood}`,
+            reflectionPrompt: parsed.reflectionPrompt || parsed.question || 'What will you carry forward?',
+        };
+    } catch (e) {
+        console.warn('Failed to parse JSON response:', e);
+        return {
+            summary: 'Your entry has been recorded.',
+            lesson: 'Taking time to reflect is valuable.',
+            moodAnalysis: `You seem to be feeling ${mood}`,
+            reflectionPrompt: 'What made you feel this way today?',
+        };
     }
-    return null;
-}   
+};

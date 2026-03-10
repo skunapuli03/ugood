@@ -16,14 +16,20 @@ import { signOut } from '../../services/auth';
 import GradientHeader from '../../components/GradientHeader';
 import { colors, gradients, borderRadius, shadows } from '../../utils/theme';
 import { useMoodStore } from '../../store/moodStore';
-
+/* import { ModelSelector } from '../../components/ModelSelector';
+import { ModelTester } from '../../components/ModelTester';
+import { getCurrentModel } from '../../services/modelProvider';
+ */
 export default function ProfileScreen() {
   const router = useRouter();
   const { user, session, clear } = useUserStore();
   const { frequency, setFrequency } = useMoodStore();
   const [darkMode, setDarkMode] = useState(false);
   const [loading, setLoading] = useState(false);
-
+/*   const [showModelSelector, setShowModelSelector] = useState(false);
+  const [showModelTester, setShowModelTester] = useState(false);
+  const [currentModel, setCurrentModel] = useState(getCurrentModel());
+ */
   const handleLogout = () => {
     Alert.alert(
       'Logout',
@@ -132,6 +138,29 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </View>
 
+        {/* <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Developer</Text>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => setShowModelSelector(true)}
+          >
+            <Ionicons name="hardware-chip-outline" size={24} color={colors.light.text} />
+            <Text style={styles.menuItemText}>AI Model</Text>
+            <Text style={styles.menuItemValue}>{currentModel}</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.light.textSecondary} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuItem}
+            onPress={() => setShowModelTester(true)}
+          >
+            <Ionicons name="flask-outline" size={24} color={colors.light.text} />
+            <Text style={styles.menuItemText}>Test Models</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.light.textSecondary} />
+          </TouchableOpacity>
+        </View> */}
+
         <TouchableOpacity
           style={styles.logoutButton}
           onPress={handleLogout}
@@ -147,6 +176,17 @@ export default function ProfileScreen() {
           )}
         </TouchableOpacity>
       </View>
+
+      {/* <ModelSelector
+        visible={showModelSelector}
+        onClose={() => setShowModelSelector(false)}
+        onModelChange={(model) => setCurrentModel(model)}
+      />
+ 
+      <ModelTester
+        visible={showModelTester}
+        onClose={() => setShowModelTester(false)}
+      /> */}
     </ScrollView>
   );
 }

@@ -1,10 +1,10 @@
 import * as FileSystem from 'expo-file-system/legacy';
 import { initLlama, LlamaContext } from 'llama.rn';
 
-const MODEL_URL =
-    'https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf';
+// Default model: Qwen 2.5 1.5B (best balance of speed and quality)
+const MODEL_URL = 'https://huggingface.co/Qwen/Qwen2.5-1.5B-Instruct-GGUF/resolve/main/qwen2.5-1.5b-instruct-q4_k_m.gguf';
 const MODEL_DIR = FileSystem.documentDirectory + 'models/';
-const MODEL_PATH = MODEL_DIR + 'tinyllama.gguf';
+const MODEL_PATH = MODEL_DIR + 'qwen.gguf';  // Match the model being downloaded
 
 let context: LlamaContext | null = null;
 
@@ -65,8 +65,9 @@ export const generate = async (prompt: string): Promise<string> => {
     const result = await context.completion({
         prompt,
         n_predict: 400,
-        temperature: 0.7,
-        stop: ['</s>', '<|user|>', '<|system|>'],
+        temperature: 0.3,
+        // ChatML stop tokens for Qwen/DeepSeek, plus common fallbacks
+        stop: ['<|im_end|>', '<|im_start|>', '</s>', '<|endoftext|>', '\n\n\n'],
     });
 
     return result.text;

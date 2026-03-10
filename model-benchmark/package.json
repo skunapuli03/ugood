@@ -1,0 +1,29 @@
+{
+  "name": "ugood-model-benchmark",
+  "version": "1.0.0",
+  "description": "Benchmark local AI models for journal entry analysis",
+  "type": "module",
+  "scripts": {
+    "test": "npx tsx benchmark.ts",
+    "test:qwen": "npx tsx benchmark.ts --model qwen",
+    "test:deepseek": "npx tsx benchmark.ts --model deepseek",
+    "test:tinyllama": "npx tsx benchmark.ts --model tinyllama",
+    "test:phi2": "npx tsx benchmark.ts --model phi2",
+    "test:all": "npx tsx benchmark.ts --all",
+    "test:custom": "npx tsx benchmark.ts --url",
+    "compare": "npx tsx benchmark.ts --all --compare",
+    "list-models": "npx tsx benchmark.ts --list",
+    "phi2-prompts": "npx tsx phi2-prompts.ts",
+    "phi2-prompts:save": "npx tsx phi2-prompts.ts --save"
+  },
+  "dependencies": {
+    "node-llama-cpp": "^3.3.0"
+  },
+  "devDependencies": {
+    "tsx": "^4.7.0",
+    "@types/node": "^20.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
