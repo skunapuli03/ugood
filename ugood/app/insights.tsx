@@ -20,7 +20,7 @@ import { formatDate } from '../utils/format';
 interface Insight {
   id: string;
   entry_id: string;
-  lesson: string;
+  lessons: string[]; // Changed to array
   created_at: string;
   entry?: {
     content: string;
@@ -61,6 +61,7 @@ export default function InsightsScreen() {
         const entry = entries.find((e: JournalEntry) => e.id === insight.entry_id);
         return {
           ...insight,
+          lessons: (insight.lesson || '').split('\n\n').filter(Boolean),
           entry,
         };
       });
@@ -124,9 +125,14 @@ export default function InsightsScreen() {
                     <Ionicons name="bulb-outline" size={20} color="#0C4A6E" />
                     <Text style={styles.insightCardTitle}>Your Journal Noticed...</Text>
                   </View>
-                  <Text style={styles.insightCardContent}>
-                    {insight.lesson || 'Keep writing to discover more patterns!'}
-                  </Text>
+                  {insight.lessons.map((lesson, idx) => (
+                    <Text key={idx} style={[styles.insightCardContent, idx > 0 && { marginTop: 8 }]}>
+                      • {lesson}
+                    </Text>
+                  ))}
+                  {insight.lessons.length === 0 && (
+                    <Text style={styles.insightCardContent}>Keep writing to discover more patterns!</Text>
+                  )}
                 </View>
               </View>
             ))}

@@ -72,6 +72,7 @@ export default function ViewEntryScreen() {
         title="Journal Entry"
         subtitle={formatDateTime(entry.created_at)}
         gradient={gradients.cool}
+        showBack={true}
       />
 
       <View style={styles.content}>
@@ -99,6 +100,8 @@ export default function ViewEntryScreen() {
               <Text style={styles.actionButtonText}>View Lesson</Text>
             </LinearGradient>
           </TouchableOpacity>
+
+          
 
           <View style={styles.secondaryActions}>
             <TouchableOpacity

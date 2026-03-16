@@ -1,9 +1,10 @@
-import { generateInsights } from './gemini';
+import { generateInsights } from './offlineAI';
 import { supabase } from './supabase';
+import { JournalEntry } from '../store/journalStore';
 
 export interface EntryInsights {
   summary: string;
-  lesson: string;
+  lessons: string[]; // Changed to array
   moodAnalysis: string;
   reflectionPrompt: string;
 }
@@ -12,20 +13,23 @@ export const processEntryWithAI = async (
   entryId: string,
   content: string,
   mood: string,
-  userId: string
+  userId: string,
+  pastEntries: JournalEntry[]
 ): Promise<EntryInsights> => {
   try {
-    // Generate insights using Gemini
-    const insights = await generateInsights(content, mood);
+    // Generate insights using local LLM with past context              
+    console.log(`processEntryWithAI: Generating insights for entry ${entryId}...`);
+    const insights = await generateInsights(content, mood, pastEntries);
+    console.log(`processEntryWithAI: Insights generated. Saving to Supabase for user ${userId}...`);
 
-    // Save insights to Supabase
+    // Save insights to Supabase (unchanged)                            
     const { error } = await supabase
       .from('insights')
       .upsert({
         entry_id: entryId,
         user_id: userId,
         summary: insights.summary,
-        lesson: insights.lesson,
+        lesson: insights.lessons.join('\n\n'), // Save as double-newline separated block
         mood_analysis: insights.moodAnalysis,
         reflection_prompt: insights.reflectionPrompt,
         created_at: new Date().toISOString(),
@@ -35,13 +39,14 @@ export const processEntryWithAI = async (
       });
 
     if (error) {
-      console.error('Error saving insights:', error);
-      // Still return insights even if save fails
+      console.error('processEntryWithAI: Error saving insights to Supabase:', error);
+    } else {
+      console.log('processEntryWithAI: Insights saved successfully.');
     }
 
     return insights;
   } catch (error: any) {
-    console.error('Error processing entry with AI:', error);
+    console.error('processEntryWithAI: Critical error processing entry with AI:', error);
     throw error;
   }
 };
@@ -60,7 +65,7 @@ export const getEntryInsights = async (entryId: string): Promise<EntryInsights |
 
     return {
       summary: data.summary || '',
-      lesson: data.lesson || '',
+      lessons: (data.lesson || '').split('\n\n').filter(Boolean), // Split back into array
       moodAnalysis: data.mood_analysis || '',
       reflectionPrompt: data.reflection_prompt || '',
     };

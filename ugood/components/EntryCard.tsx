@@ -7,8 +7,8 @@ import ThreeDotMenu from './ThreeDotMenu';
 interface EntryCardProps {
   entry: {
     id: string;
-    title: string;
     content: string;
+    title?: string;
     mood: string;
     created_at: string;
   };
@@ -25,11 +25,6 @@ export default function EntryCard({
   onViewLesson,
   onDelete,
 }: EntryCardProps) {
-  // Use entry.title and entry.content directly
-  const preview = entry.content.length > 100
-    ? entry.content.substring(0, 100) + '...'
-    : entry.content;
-
   return (
     <TouchableOpacity
       style={styles.card}
@@ -45,7 +40,7 @@ export default function EntryCard({
         />
       </View>
       <Text style={styles.title} numberOfLines={1}>{entry.title || 'Untitled Entry'}</Text>
-      <Text style={styles.preview} numberOfLines={3}>{preview}</Text>
+      <Text style={styles.preview} numberOfLines={3}>{entry.content}</Text>
     </TouchableOpacity>
   );
 }
@@ -56,6 +51,7 @@ const styles = StyleSheet.create({
     borderRadius: borderRadius.lg,
     padding: 16,
     marginBottom: 12,
+    height: 180,
     ...shadows.md,
     borderWidth: 1,
     borderColor: colors.light.border,

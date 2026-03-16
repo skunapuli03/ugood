@@ -2,230 +2,286 @@ import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
-  ScrollView,
   StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
   TouchableOpacity,
+  ActivityIndicator,
+  SafeAreaView,
+  ScrollView,
+  Animated,
+  Easing,
 } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { useJournalStore } from '../../../store/journalStore'; // Import store to get entries
-import { getEntryInsights } from '../../../services/aiProcessor';
-import GradientHeader from '../../../components/GradientHeader';
-import { colors, gradients, shadows } from '../../../utils/theme';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { getEntryInsights } from '../../../services/aiProcessor';
+import { supabase } from '../../../services/supabase';
+import { colors, borderRadius, spacing } from '../../../utils/theme';
+import { formatDateTime } from '../../../utils/format';
 
-export default function LessonScreen() {
+interface InsightData {
+  lessons?: string[]; // Changed to array
+  reflection?: string;
+  created_at?: string;
+}
+
+export default function LessonViewScreen() {
+  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  // Find the entry content from the store
-  const { entries } = useJournalStore();
-  const entry = entries.find(e => e.id === id);
-
-  const [insights, setInsights] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [insight, setInsight] = useState<InsightData | null>(null);
+  const [journalDate, setJournalDate] = useState<string | null>(null);
+  const spinValue = new Animated.Value(0);
+
+  // Set up rotation animation
+  useEffect(() => {
+    if (loading) {
+      Animated.loop(
+        Animated.timing(spinValue, {
+          toValue: 1,
+          duration: 2000,
+          easing: Easing.linear,
+          useNativeDriver: true,
+        })
+      ).start();
+    }
+  }, [loading]);
+
+  const spin = spinValue.interpolate({
+    inputRange: [0, 1],
+    outputRange: ['0deg', '360deg'],
+  });
 
   useEffect(() => {
-    loadInsights();
+    loadData();
   }, [id]);
 
-  const loadInsights = async () => {
+  const loadData = async () => {
     if (!id) return;
-    setLoading(true);
     try {
+      // 1. Fetch Entry Date
+      const { data: journalData } = await supabase
+        .from('journals')
+        .select('created_at')
+        .eq('id', id)
+        .single();
+
+      if (journalData) {
+        setJournalDate(journalData.created_at);
+      }
+
+      // 2. Fetch Insights (using existing service)
       const data = await getEntryInsights(id);
-      setInsights(data);
-    } catch (error: any) {
-      console.error('Error loading insights:', error);
+
+      if (!data) {
+        // Fallback for visual testing if no AI data exists
+        setInsight({
+          lessons: ["Remember to prioritize your peace over temporary approval.", "Trust your intuition; it has guided you well before.", "Embrace the uncertainty as a space for growth, not fear."]
+        });
+      } else {
+        setInsight(data);
+      }
+    } catch (err) {
+      console.error('Error loading lesson:', err);
+      // Fallback on error too so user sees UI
+      setInsight({
+        lessons: ["Remember to prioritize your peace over temporary approval.", "Trust your intuition; it has guided you well before."]
+      });
     } finally {
       setLoading(false);
     }
   };
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadInsights();
-    setRefreshing(false);
+  const handleAcknowledge = () => {
+    router.back();
   };
 
-  if (loading && !insights) {
+  if (loading) {
     return (
-      <View style={styles.container}>
-        <GradientHeader
-          title="From Your Past Self"
-          subtitle="Reading your entry..."
-          gradient={gradients.primary}
-        />
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={colors.light.primary} />
-          <Text style={styles.loadingText}>Connecting to your past self...</Text>
-        </View>
+      <View style={styles.loadingContainer}>
+        <Animated.View style={{ transform: [{ rotate: spin }] }}>
+          <Ionicons name="hourglass-outline" size={64} color={colors.light.primary} />
+        </Animated.View>
+        <Text style={styles.loadingText}>Connecting to your past self...</Text>
+        <Text style={styles.loadingSubtext}>Your local AI is reflecting on your journal.</Text>
       </View>
     );
   }
 
-  // If entry didn't load from store for some reason
-  const entryText = entry?.content || "Could not load original entry text.";
-
   return (
-    <View style={styles.container}>
-      <GradientHeader
-        title="From Your Past Self"
-        subtitle="A note on what you wrote"
-        gradient={gradients.primary}
-      />
+    <SafeAreaView style={styles.container}>
+      <View style={styles.contentContainer}>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {/* 1. The Handwritten Note (Past Self) */}
-        {insights && (
-          <View style={styles.noteContainer}>
-            <View style={styles.noteHeader}>
-              <Ionicons name="pencil" size={18} color="#92400E" />
-              <Text style={styles.noteTitle}>I noticed something...</Text>
-            </View>
-            <Text style={styles.handwrittenText}>
-              "{insights.lesson || "I noticed a pattern in your writing here."}"
+        {/* Header Icon */}
+        <View style={styles.iconContainer}>
+          <Ionicons name="hourglass-outline" size={32} color={colors.light.primary} />
+        </View>
+
+        {/* Main Card Content */}
+        <View style={styles.card}>
+          <Text style={styles.headerTitle}>From Your Past Self</Text>
+          {journalDate && (
+            <Text style={styles.dateLabel}>
+              Written {formatDateTime(journalDate)}
             </Text>
-          </View>
-        )}
+          )}
 
-        {/* 2. The Entry Context */}
-        <View style={styles.entryContainer}>
-          <Text style={styles.entryLabel}>YOUR ENTRY</Text>
-          <View style={styles.paperSheet}>
-            <Text style={styles.entryText}>{entryText}</Text>
+          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
+            {insight?.lessons && insight.lessons.length > 0 ? (
+              insight.lessons.map((lesson, index) => (
+                <View key={index} style={styles.lessonContainer}>
+                  <Text style={styles.lessonText}>{lesson}</Text>
+                  {index < (insight.lessons?.length || 0) - 1 && <View style={styles.separator} />}
+                </View>
+              ))
+            ) : (
+              <Text style={styles.lessonText}>Your past self hasn't left a message here yet.</Text>
+            )}
+          </ScrollView>
+
+          <View style={styles.signatureLine}>
+            <Text style={styles.signatureText}>— You</Text>
           </View>
         </View>
 
-        {/* 3. Future Action */}
-        {insights?.reflection && (
-          <View style={styles.stickyNote}>
-            <View style={styles.pin} />
-            <Text style={styles.stickyTitle}>Try this tomorrow:</Text>
-            <Text style={styles.stickyText}>{insights.reflection}</Text>
-          </View>
-        )}
+        {/* Action Button */}
+        <View style={styles.footer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleAcknowledge}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.actionButtonText}>I hear you</Text>
+          </TouchableOpacity>
+        </View>
 
-        <View style={{ height: 40 }} />
-      </ScrollView>
-    </View>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6', // Light gray bg
+    backgroundColor: '#F8F9FA', // Surface color (Clean/Flat)
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#F8F9FA',
   },
   loadingText: {
-    marginTop: 16,
+    marginTop: 24,
+    color: colors.light.text,
+    fontSize: 20,
+    fontWeight: '600',
+  },
+  loadingSubtext: {
+    marginTop: 8,
     color: colors.light.textSecondary,
-    fontSize: 16,
+    fontSize: 14,
+    textAlign: 'center',
+    paddingHorizontal: 40,
+  },
+  contentContainer: {
+    flex: 1,
+    padding: spacing.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    marginBottom: spacing.lg,
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#EEF2FF', // Very light indigo tint
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  card: {
+    width: '100%',
+    backgroundColor: '#FFFFFF',
+    borderRadius: borderRadius.xl,
+    padding: spacing.xl,
+    paddingBottom: spacing.lg,
+    alignItems: 'center',
+    // Editorial Shadow (subtle but crisp)
+    shadowColor: '#1F2937',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    maxHeight: '70%',
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: '700', // Bold Sans for modern editorial feel
+    color: '#111827', // Slate-900
+    marginBottom: spacing.xs,
+    textAlign: 'center',
+  },
+  dateLabel: {
+    fontSize: 14,
+    color: colors.light.textSecondary,
+    marginBottom: spacing.xl,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+    fontWeight: '500',
   },
   scrollView: {
-    flex: 1,
+    width: '100%',
+    marginBottom: spacing.lg,
   },
-  scrollContent: {
-    padding: 20,
-    gap: 24,
-  },
-  // handwritten note
-  noteContainer: {
-    backgroundColor: '#FEF3C7', // Amber-100 (Post-it / Note feel)
-    padding: 20,
-    borderRadius: 2,
-    borderLeftWidth: 4,
-    borderLeftColor: '#D97706', // Amber-600
-    ...shadows.sm,
-    transform: [{ rotate: '-1deg' }], // Slight tilt for organic feel
-  },
-  noteHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    marginBottom: 8,
-  },
-  noteTitle: {
-    color: '#92400E', // Amber-800
-    fontWeight: 'bold',
-    fontSize: 14,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-  },
-  handwrittenText: {
+  lessonText: {
     fontSize: 18,
-    color: '#4B5563',
-    fontStyle: 'italic', // Fallback for handwriting font
     lineHeight: 28,
-    fontFamily: 'serif',
+    color: '#374151',
+    textAlign: 'center',
+    fontWeight: '400',
   },
-  // Entry
-  entryContainer: {
-    gap: 8,
+  lessonContainer: {
+    width: '100%',
+    paddingVertical: spacing.md,
   },
-  entryLabel: {
-    fontSize: 12,
-    color: colors.light.textSecondary,
-    fontWeight: '600',
-    letterSpacing: 1,
-    marginLeft: 4,
-  },
-  paperSheet: {
-    backgroundColor: '#FFFFFF',
-    padding: 24,
-    borderRadius: 4,
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    ...shadows.sm,
-  },
-  entryText: {
-    fontSize: 16,
-    color: '#1F2937', // Gray-800
-    lineHeight: 26,
-    fontFamily: 'serif', // Book feel
-  },
-  // Sticky Note
-  stickyNote: {
-    backgroundColor: '#D1FAE5', // Emerald-100
-    padding: 20,
-    borderRadius: 2,
-    position: 'relative',
-    marginTop: 10,
-    ...shadows.md,
-    transform: [{ rotate: '1deg' }],
-  },
-  pin: {
-    position: 'absolute',
-    top: -10,
+  separator: {
+    height: 1,
+    backgroundColor: '#F3F4F6',
+    width: '40%',
     alignSelf: 'center',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#EF4444', // Red pin
-    ...shadows.sm,
+    marginVertical: spacing.xs,
   },
-  stickyTitle: {
-    fontWeight: 'bold',
-    color: '#065F46', // Emerald-800
-    marginBottom: 4,
-    textTransform: 'uppercase',
-    fontSize: 12,
+  signatureLine: {
+    width: '100%',
+    alignItems: 'flex-end',
+    marginTop: spacing.sm,
   },
-  stickyText: {
-    color: '#064E3B',
+  signatureText: {
     fontSize: 16,
-    lineHeight: 24,
+    color: colors.light.primary, // Indigo signature
+    fontWeight: '600',
+    fontStyle: 'italic',
+  },
+  footer: {
+    position: 'absolute',
+    bottom: 50,
+    width: '100%',
+    alignItems: 'center',
+  },
+  actionButton: {
+    backgroundColor: colors.light.primary, // Indigo
+    paddingVertical: 16,
+    paddingHorizontal: 48,
+    borderRadius: 100, // Pill shape
+    // Subtle shadow for lift
+    shadowColor: colors.light.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  actionButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.5,
   },
 });

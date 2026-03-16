@@ -72,7 +72,10 @@ export default function EditEntryScreen() {
             style={styles.doneButton}
           >
             {loading ? (
-              <ActivityIndicator color={colors.light.primary} size="small" />
+              <View style={styles.loadingWrapper}>
+                <ActivityIndicator color={colors.light.primary} size="small" />
+                <Text style={styles.loadingText}>Generating...</Text>
+              </View>
             ) : (
               <Text style={styles.doneText}>Done</Text>
             )}
@@ -140,6 +143,16 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     color: colors.light.primary,
+  },
+  loadingWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: colors.light.primary,
+    fontWeight: '500',
   },
   titleInput: {
     fontSize: 28,

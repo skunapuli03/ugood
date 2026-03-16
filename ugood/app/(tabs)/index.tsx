@@ -18,6 +18,8 @@ import { useUserStore } from '../../store/userStore';
 import { useJournalStore } from '../../store/journalStore';
 import { useMoodStore } from '../../store/moodStore';
 import { getEntryInsights } from '../../services/aiProcessor';
+import { useNotificationStore } from '../../store/notificationStore';
+import { BackgroundProcessor } from '../../services/backgroundProcessor';
 import GradientHeader from '../../components/GradientHeader';
 import EntryCard from '../../components/EntryCard';
 import { colors, gradients, borderRadius, shadows } from '../../utils/theme';
@@ -28,9 +30,32 @@ export default function HomeScreen() {
   const { user, session, initialize } = useUserStore();
   const { entries, loading, fetchEntries } = useJournalStore();
   const { lastMoodAt, frequency, recordMood, fetchLastMoodTime } = useMoodStore();
+  const { unreadCount, fetchNotifications } = useNotificationStore();
   const [refreshing, setRefreshing] = React.useState(false);
   const [selectedMood, setSelectedMood] = React.useState('');
-  const [todayInsight, setTodayInsight] = React.useState<any>(null);
+  const [activeIndex, setActiveIndex] = React.useState(0);
+  const [todayInsight, setTodayInsight] = React.useState<string>('');
+  const [timeToNext, setTimeToNext] = React.useState<string | null>(null);
+
+  // Static dictionary of insights
+  const wellnessLessons = [
+    "Remember that progress, not perfection, is the goal. Each small step you take is a victory.",
+    "Your feelings are valid. Give yourself permission to feel them fully.",
+    "Rest is not a reward, it's a necessity. Take time to recharge.",
+    "Be kind to yourself today. You are doing the best you can.",
+    "Growth often happens outside your comfort zone.",
+    "Small consistent actions lead to big changes over time."
+  ];
+
+  const onViewableItemsChanged = React.useRef(({ viewableItems }: any) => {
+    if (viewableItems.length > 0) {
+      setActiveIndex(viewableItems[0].index || 0);
+    }
+  }).current;
+
+  const viewabilityConfig = React.useRef({
+    itemVisiblePercentThreshold: 50
+  }).current;
 
   useEffect(() => {
     if (!session) {
@@ -39,27 +64,68 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    if (user) {
-      fetchEntries(user.id);
-      fetchLastMoodTime(user.id);
-    }
+    const initData = async () => {
+      if (user) {
+        await Promise.all([
+          fetchEntries(user.id),
+          fetchLastMoodTime(user.id),
+          fetchNotifications(user.id)
+        ]);
+
+        // Now that data is fetched, run the background check
+        BackgroundProcessor.runCheck(user.id);
+      }
+    };
+
+    initData();
   }, [user]);
 
   useEffect(() => {
-    const loadTodayInsight = async () => {
-      if (entries.length > 0) {
-        const latestEntry = entries[0];
-        const insight = await getEntryInsights(latestEntry.id);
-        setTodayInsight(insight);
+    // Pick a random lesson for the day (simple implementation)
+    const dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+    const lessonIndex = dayOfYear % wellnessLessons.length;
+    setTodayInsight(wellnessLessons[lessonIndex]);
+  }, []);
+
+  // Live countdown timer
+  useEffect(() => {
+    const updateCountdown = () => {
+      if (!lastMoodAt) {
+        setTimeToNext(null);
+        return;
+      }
+
+      const now = Date.now();
+      const throttleMs = frequency * 60 * 1000;
+      const diff = now - lastMoodAt;
+
+      if (diff < throttleMs) {
+        const remainingMs = throttleMs - diff;
+        const mins = Math.floor(remainingMs / 60000);
+        const secs = Math.floor((remainingMs % 60000) / 1000);
+
+        if (mins > 0) {
+          setTimeToNext(`${mins}m remaining`);
+        } else {
+          setTimeToNext(`${secs}s remaining`);
+        }
+      } else {
+        setTimeToNext(null);
       }
     };
-    loadTodayInsight();
-  }, [entries]);
+
+    updateCountdown();
+    const interval = setInterval(updateCountdown, 1000);
+    return () => clearInterval(interval);
+  }, [lastMoodAt, frequency]);
 
   const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
     if (user) {
-      await fetchEntries(user.id);
+      await Promise.all([
+        fetchEntries(user.id),
+        fetchNotifications(user.id)
+      ]);
     }
     setRefreshing(false);
   }, [user, fetchEntries]);
@@ -81,9 +147,7 @@ export default function HomeScreen() {
     if (!user) return;
 
     if (isMoodThrottled) {
-      const remainingMs = (frequency * 60 * 1000) - (Date.now() - lastMoodAt!);
-      const mins = Math.ceil(remainingMs / 60000);
-      Alert.alert('Mood Saved!', `Your mood has been recorded! We'll stay by your side until it's time for the next check-in (in about ${mins}m).`);
+      Alert.alert('Mood Saved!', `Your mood has been recorded! We'll stay by your side until it's time for the next check-in.`);
       return;
     }
 
@@ -155,12 +219,35 @@ export default function HomeScreen() {
       <GradientHeader
         title={`Hello, ${userName}!`}
         subtitle="Take a moment to reflect and capture your thoughts"
+        rightElement={
+          <TouchableOpacity
+            style={styles.notificationBtn}
+            onPress={() => router.push({ pathname: '/inbox' } as any)}
+          >
+            <Ionicons name="notifications-outline" size={24} color="#FFFFFF" />
+            {unreadCount > 0 && (
+              <View style={styles.badge}>
+                <Text style={styles.badgeText}>
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        }
       />
 
       <View style={styles.content}>
         {/* Today's Mood Card - Overlapping the header */}
         <View style={styles.moodCard}>
-          <Text style={styles.moodCardTitle}>Today's Mood</Text>
+          <View style={styles.moodCardHeader}>
+            <Text style={styles.moodCardTitle}>Today's Mood</Text>
+            {timeToNext && (
+              <View style={styles.throttleBadge}>
+                <Ionicons name="time-outline" size={14} color={colors.light.primary} />
+                <Text style={styles.throttleText}>{timeToNext}</Text>
+              </View>
+            )}
+          </View>
           <View style={styles.moodButtonsContainer}>
             {moodEmojis.map((emoji, index) => {
               const scale = scaleAnimations[index];
@@ -180,14 +267,14 @@ export default function HomeScreen() {
                           ? moodColors[index]
                           : '#F3F4F6',
                         transform: [{ scale }],
-                        opacity: isMoodThrottled && selectedMood !== emoji ? 0.5 : 1,
+                        opacity: 1,
                       },
                     ]}
                   >
                     <TouchableOpacity
                       style={styles.moodButtonInner}
                       onPress={() => handleMoodPress(emoji, index)}
-                      activeOpacity={isMoodThrottled ? 1 : 0.7}
+                      activeOpacity={0.7}
                     >
                       <Text style={styles.moodEmoji}>{emoji}</Text>
 
@@ -217,14 +304,14 @@ export default function HomeScreen() {
         <View style={styles.recentSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent entries</Text>
-            {recentEntries.length >= 3 && (
+            {recentEntries.length >= 4 && (
               <View style={styles.paginationDots}>
                 {[0, 1, 2, 3].map((dot, index) => (
                   <View
                     key={index}
                     style={[
                       styles.dot,
-                      index === 0 && styles.dotActive,
+                      activeIndex === index && styles.dotActive,
                     ]}
                   />
                 ))}
@@ -243,7 +330,7 @@ export default function HomeScreen() {
           ) : (
             <>
               <FlatList
-                data={recentEntries.slice(0, 3)}
+                data={recentEntries.slice(0, 4)}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
@@ -262,17 +349,19 @@ export default function HomeScreen() {
                   </View>
                 )}
                 contentContainerStyle={styles.entriesList}
+                onViewableItemsChanged={onViewableItemsChanged}
+                viewabilityConfig={viewabilityConfig}
+                snapToInterval={280 + 12} // card width + margin
+                decelerationRate="fast"
               />
-              {entries.length >= 3 && (
-                <TouchableOpacity
-                  style={styles.viewAllButton}
-                  onPress={() => router.push('/(tabs)/journals')}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.viewAllText}>View All Journals</Text>
-                  <Ionicons name="chevron-forward" size={16} color={colors.light.textSecondary} />
-                </TouchableOpacity>
-              )}
+              <TouchableOpacity
+                style={styles.viewAllButton}
+                onPress={() => router.push('/(tabs)/journals')}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.viewAllText}>View All Journals</Text>
+                <Ionicons name="chevron-forward" size={16} color={colors.light.textSecondary} />
+              </TouchableOpacity>
             </>
           )}
         </View>
@@ -282,7 +371,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Today's insight</Text>
           <View style={styles.insightCard}>
             <Text style={styles.insightText}>
-              {todayInsight?.lesson || todayInsight?.reflectionPrompt || 'Remember that progress, not perfection, is the goal. Each small step you take is a victory.'}
+              {todayInsight}
             </Text>
           </View>
         </View>
@@ -314,7 +403,28 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: colors.light.text,
+  },
+  moodCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 24,
+  },
+  throttleBadge: {
+    backgroundColor: colors.light.primary + '10', // Light indigo background
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderColor: colors.light.primary + '33', // Subtle indigo border
+  },
+  throttleText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: colors.light.primary,
   },
   moodButtonsContainer: {
     flexDirection: 'row',
@@ -438,6 +548,33 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: colors.light.textSecondary,
     marginTop: 8,
+  },
+  notificationBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  badge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#EF4444',
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 2,
+    borderColor: '#FFFFFF',
+  },
+  badgeText: {
+    color: '#FFFFFF',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
 });
 

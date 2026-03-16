@@ -45,17 +45,17 @@ export const useJournalStore = create<JournalState>((set, get) => ({
       set({ error: error.message, loading: false });
     }
   },
-  createEntry: async (userId: string, title: string, content: string, mood: string) => {
+  createEntry: async (userId: string, title: string, content: string) => {
     set({ loading: true, error: null });
     try {
       const entryData = {
         user_id: userId,
         title,
         content,
-        mood,
+        mood: '', // Default empty since mood is tracked separately
       };
 
-      console.log('Creating entry with data:', { userId, contentLength: content.length, mood });
+      console.log('Creating entry with data:', { userId, contentLength: content.length, mood: '' });
 
       const { data, error } = await supabase
         .from('journals')
@@ -72,7 +72,7 @@ export const useJournalStore = create<JournalState>((set, get) => ({
 
       // Process with AI in the background
       if (data) {
-        processEntryWithAI(data.id, `${title}\n\n${content}`, mood, userId).catch((err) => {
+        processEntryWithAI(data.id, `${title}\n\n${content}`, '', userId, get().entries).catch((err) => {
           console.error('Error processing entry with AI:', err);
         });
       }
@@ -111,7 +111,7 @@ export const useJournalStore = create<JournalState>((set, get) => ({
       // Reprocess with AI
       const entry = get().entries.find((e) => e.id === entryId);
       if (data && entry) {
-        processEntryWithAI(data.id, content, mood, entry.user_id).catch((err) => {
+        processEntryWithAI(data.id, content, mood, entry.user_id, get().entries).catch((err) => {
           console.error('Error reprocessing entry with AI:', err);
         });
       }
@@ -163,5 +163,3 @@ export const useJournalStore = create<JournalState>((set, get) => ({
   },
   clearEntries: () => set({ entries: [], loading: false, error: null }),
 }));
-
-

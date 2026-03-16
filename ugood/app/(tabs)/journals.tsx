@@ -36,12 +36,6 @@ export default function JournalsScreen() {
 
   return (
     <View style={styles.container}>
-      <GradientHeader
-        title="All Journals"
-        subtitle={`${entries.length} total entries`}
-        gradient={gradients.primary}
-      />
-
       {loading && entries.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.light.primary} />
@@ -55,17 +49,27 @@ export default function JournalsScreen() {
         <FlatList
           data={entries}
           keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <EntryCard
-              entry={item}
-              onPress={() => router.push(`/journal/view/${item.id}`)}
-              onEdit={() => router.push(`/journal/edit/${item.id}`)}
-              onViewLesson={() => router.push(`/journal/lesson/${item.id}`)}
-              onDelete={async () => {
-                const { deleteEntry } = useJournalStore.getState();
-                await deleteEntry(item.id);
-              }}
+          ListHeaderComponent={
+            <GradientHeader
+              title="All Journals"
+              subtitle={`${entries.length} total entries`}
+              gradient={gradients.primary}
+              style={styles.header}
             />
+          }
+          renderItem={({ item }) => (
+            <View style={styles.cardWrapper}>
+              <EntryCard
+                entry={item}
+                onPress={() => router.push(`/journal/view/${item.id}`)}
+                onEdit={() => router.push(`/journal/edit/${item.id}`)}
+                onViewLesson={() => router.push(`/journal/lesson/${item.id}`)}
+                onDelete={async () => {
+                  const { deleteEntry } = useJournalStore.getState();
+                  await deleteEntry(item.id);
+                }}
+              />
+            </View>
           )}
           contentContainerStyle={styles.listContent}
           refreshControl={
@@ -83,7 +87,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.light.background,
   },
   listContent: {
-    padding: 20,
+    paddingBottom: 20,
+  },
+  cardWrapper: {
+    paddingHorizontal: 20,
+  },
+  header: {
+    marginBottom: 20,
   },
   loadingContainer: {
     flex: 1,

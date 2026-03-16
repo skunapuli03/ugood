@@ -33,9 +33,8 @@ export default function NewEntryScreen() {
       return;
     }
 
-    const mood = '😊'; // Default mood
 
-    const entry = await createEntry(user.id, title.trim() || 'Untitled Entry', content.trim(), mood);
+    const entry = await createEntry(user.id, title.trim() || 'Untitled Entry', content.trim());
     if (entry) {
       router.back();
     } else {
@@ -57,13 +56,15 @@ export default function NewEntryScreen() {
           <Text style={styles.headerTitle}>New Entry</Text>
           <TouchableOpacity
             onPress={handleDone}
-            disabled={loading}
-            style={styles.doneButton}
+            disabled={loading || !content.trim()}
+            style={[styles.doneButton, (!content.trim()) && styles.doneButtonDisabled]}
           >
             {loading ? (
-              <ActivityIndicator color={colors.light.primary} size="small" />
+              <View style={styles.loadingWrapper}>
+                <ActivityIndicator color={colors.light.primary} size="small" />
+              </View>
             ) : (
-              <Text style={styles.doneText}>Done</Text>
+              <Text style={[styles.doneText, (!content.trim()) && styles.doneTextDisabled]}>Done</Text>
             )}
           </TouchableOpacity>
         </View>
@@ -129,6 +130,22 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: '600',
     color: colors.light.primary,
+  },
+  doneTextDisabled: {
+    color: '#D1D5DB',
+  },
+  doneButtonDisabled: {
+    opacity: 0.6,
+  },
+  loadingWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: colors.light.primary,
+    fontWeight: '500',
   },
   titleInput: {
     fontSize: 28,
