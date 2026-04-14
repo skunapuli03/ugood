@@ -240,7 +240,7 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
 
                 {/* Brand Identity */}
                 <View style={styles.brandContainer}>
-                    {/* Glowing "Yu" Title */}
+                    {/* Glowing "UGood" Title */}
                     <Animated.Text
                         style={[
                             styles.title,
@@ -250,14 +250,14 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
                             },
                         ]}
                     >
-                        Yu
+                        UGood
                     </Animated.Text>
 
                     {/* Tagline */}
                     <Animated.Text
                         style={[styles.tagline, { opacity: taglineOpacity }]}
                     >
-                        THE LIVING JOURNAL
+                        A JOURNAL THAT CARES.
                     </Animated.Text>
                 </View>
             </View>
@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     title: {
-        fontSize: 96,
+        fontSize: 72,
         fontWeight: '500',
         fontStyle: 'italic',
         color: colors.light.text, // #3D3D3D charcoal
