@@ -58,7 +58,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   moodButtonSelected: {
-    backgroundColor: colors.light.primaryLight,
+    backgroundColor: colors.light.accent,
     transform: [{ scale: 1.1 }],
     ...shadows.md,
   },

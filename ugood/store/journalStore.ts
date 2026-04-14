@@ -1,6 +1,5 @@
 import { create } from 'zustand';
 import { supabase } from '../services/supabase';
-import { processEntryWithAI } from '../services/aiProcessor';
 
 export interface JournalEntry {
   id: string;
@@ -45,17 +44,17 @@ export const useJournalStore = create<JournalState>((set, get) => ({
       set({ error: error.message, loading: false });
     }
   },
-  createEntry: async (userId: string, title: string, content: string) => {
+  createEntry: async (userId: string, title: string, content: string, mood: string = '') => {
     set({ loading: true, error: null });
     try {
       const entryData = {
         user_id: userId,
         title,
         content,
-        mood: '', // Default empty since mood is tracked separately
+        mood, // Save the comma-separated emotions string here
       };
 
-      console.log('Creating entry with data:', { userId, contentLength: content.length, mood: '' });
+      console.log('Creating entry with data:', { userId, contentLength: content.length, mood });
 
       const { data, error } = await supabase
         .from('journals')
@@ -70,12 +69,7 @@ export const useJournalStore = create<JournalState>((set, get) => ({
 
       console.log('Entry created successfully:', data?.id);
 
-      // Process with AI in the background
-      if (data) {
-        processEntryWithAI(data.id, `${title}\n\n${content}`, '', userId, get().entries).catch((err) => {
-          console.error('Error processing entry with AI:', err);
-        });
-      }
+      // AI lesson generates on-demand when user taps "View Lesson" (P1 queue)
 
       // Add to local state
       set((state) => ({
@@ -108,13 +102,7 @@ export const useJournalStore = create<JournalState>((set, get) => ({
 
       if (error) throw error;
 
-      // Reprocess with AI
-      const entry = get().entries.find((e) => e.id === entryId);
-      if (data && entry) {
-        processEntryWithAI(data.id, content, mood, entry.user_id, get().entries).catch((err) => {
-          console.error('Error reprocessing entry with AI:', err);
-        });
-      }
+      // AI lesson generates on-demand when user taps "View Lesson" (P1 queue)
 
       // Update local state
       set((state) => ({

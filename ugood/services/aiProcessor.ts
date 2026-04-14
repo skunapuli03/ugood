@@ -46,7 +46,11 @@ export const processEntryWithAI = async (
 
     return insights;
   } catch (error: any) {
-    console.error('processEntryWithAI: Critical error processing entry with AI:', error);
+    if (error.message === 'LLM_BUSY') {
+      console.log('processEntryWithAI: LLM is currently busy, skipping error trace.');
+    } else {
+      console.error('processEntryWithAI: Critical error processing entry with AI:', error);
+    }
     throw error;
   }
 };

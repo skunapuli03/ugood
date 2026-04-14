@@ -9,7 +9,6 @@ Notifications.setNotificationHandler({
         shouldSetBadge: false,
         shouldShowBanner: true,
         shouldShowList: true,
-        priority: Notifications.AndroidNotificationPriority.MAX,
     }),
 });
 
@@ -20,11 +19,9 @@ export const NotificationService = {
     async requestPermissions() {
         let finalStatus;
 
-        // Check existing permissions
         const { status: existingStatus } = await Notifications.getPermissionsAsync();
         finalStatus = existingStatus;
 
-        // Ask if not already granted
         if (existingStatus !== 'granted') {
             const { status } = await Notifications.requestPermissionsAsync();
             finalStatus = status;
@@ -35,13 +32,12 @@ export const NotificationService = {
             return false;
         }
 
-        // Android 8+ requires a channel
         if (Platform.OS === 'android') {
             await Notifications.setNotificationChannelAsync('default', {
                 name: 'default',
                 importance: Notifications.AndroidImportance.MAX,
                 vibrationPattern: [0, 250, 250, 250],
-                lightColor: '#6366f1', // matches our primary theme color
+                lightColor: '#c5ebfc',
             });
         }
 
@@ -49,31 +45,49 @@ export const NotificationService = {
     },
 
     /**
-     * Schedule a daily 8:00 PM mood check-in
+     * Morning Mirror — 8:00 AM daily
      */
-    async scheduleDailyCheckIn() {
+    async scheduleMorningMirror() {
         const hasPermission = await this.requestPermissions();
         if (!hasPermission) return;
 
-        // Schedule the daily reminder (8 PM)
-        // Note: We use a specific identifier logic if we want to update it, 
-        // but for simplicity we'll just schedule it. 
-        // In a real app, we might want to check the list of scheduled ones first.
         await Notifications.scheduleNotificationAsync({
-            identifier: 'daily-checkin',
+            identifier: 'morning-mirror',
             content: {
-                title: "Take a breath. 🌿",
-                body: "Your private space is ready. How are you feeling today?",
+                title: "Good morning ☀️",
+                body: "How are you feeling? A quick check-in sets the tone for your whole day.",
+                data: { screen: 'journal/emotions' },
+            },
+            trigger: {
+                type: Notifications.SchedulableTriggerInputTypes.DAILY,
+                hour: 8,
+                minute: 0,
+            },
+        });
+        console.log('Morning Mirror scheduled for 8:00 AM');
+    },
+
+    /**
+     * Streak Savior — 9:00 PM daily
+     */
+    async scheduleStreakSavior() {
+        const hasPermission = await this.requestPermissions();
+        if (!hasPermission) return;
+
+        await Notifications.scheduleNotificationAsync({
+            identifier: 'streak-savior',
+            content: {
+                title: "Your streak is still alive 🌱",
+                body: "Don't let today slip by — 60 seconds is all you need to keep going.",
                 data: { screen: 'journal/new' },
             },
             trigger: {
                 type: Notifications.SchedulableTriggerInputTypes.DAILY,
-                hour: 20,
+                hour: 21,
                 minute: 0,
             },
         });
-
-        console.log('Daily check-in scheduled for 8:00 PM');
+        console.log('Streak Savior scheduled for 9:00 PM');
     },
 
     /**
@@ -83,7 +97,6 @@ export const NotificationService = {
         const hasPermission = await this.requestPermissions();
         if (!hasPermission) return;
 
-        // Cancel any existing dynamic reminder to avoid duplicates
         await Notifications.cancelScheduledNotificationAsync('mood-reminder');
 
         if (minutes <= 0) return;
@@ -91,14 +104,14 @@ export const NotificationService = {
         const id = await Notifications.scheduleNotificationAsync({
             identifier: 'mood-reminder',
             content: {
-                title: "Checking in... 🍃",
-                body: "It's time for your scheduled mood check-in. How are things going?",
+                title: "Just checking in 🤍",
+                body: "One minute. That's all it takes to talk to your future self.",
                 data: { screen: '/(tabs)' },
             },
             trigger: {
                 type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-                seconds: Math.max(minutes * 60, 1), // Ensure at least 1s
-                repeats: false,
+                seconds: Math.max(minutes * 60, 1),
+                repeats: true,
             },
         });
 

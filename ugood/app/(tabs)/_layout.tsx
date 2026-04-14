@@ -1,102 +1,112 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useSegments } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { View, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { colors, gradients, borderRadius, shadows } from '../../utils/theme';
-
-function FloatingAddButton() {
-  const router = useRouter();
-  
-  return (
-    <TouchableOpacity
-      style={styles.fab}
-      onPress={() => router.push('/journal/new')}
-      activeOpacity={0.8}
-    >
-      <LinearGradient
-        colors={gradients.primary}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.fabGradient}
-      >
-        <Ionicons name="add" size={28} color="#FFFFFF" />
-      </LinearGradient>
-    </TouchableOpacity>
-  );
-}
+import { colors, shadows } from '../../utils/theme';
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
-  
+  const router = useRouter();
+
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: colors.light.background }}>
       <Tabs
         screenOptions={{
           headerShown: false,
+          tabBarShowLabel: false,
           tabBarActiveTintColor: colors.light.primary,
-          tabBarInactiveTintColor: colors.light.textSecondary,
+          tabBarInactiveTintColor: 'rgba(30,58,138,0.3)', // muted blue-ish
           tabBarStyle: {
-            backgroundColor: colors.light.card,
+            backgroundColor: 'rgba(245,242,234,0.95)',
             borderTopWidth: 1,
-            borderTopColor: colors.light.border,
-            height: 60 + insets.bottom,
-            paddingBottom: insets.bottom,
-            paddingTop: 8,
+            borderTopColor: 'rgba(61,61,61,0.05)',
+            height: 80 + insets.bottom,
+            paddingBottom: insets.bottom + 8,
+            paddingTop: 16,
+            paddingHorizontal: 40,
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
           },
         }}
       >
-          <Tabs.Screen
-            name="index"
-            options={{
-              title: 'Home',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="home" size={size} color={color} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="journals"
-            options={{
-              title: 'Journals',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="journal" size={size} color={color} />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="profile"
-            options={{
-              title: 'Profile',
-              tabBarIcon: ({ color, size }) => (
-                <Ionicons name="person" size={size} color={color} />
-              ),
-            }}
-          />
+        {/* Left Position: Home (dynamic icon) */}
+        <Tabs.Screen
+          name="index"
+          options={{
+            title: 'Home',
+            tabBarIcon: ({ focused }) => {
+              if (focused) {
+                // When on Home: show the dark + circle (purely visual — tap handled by listeners)
+                return (
+                  <View style={styles.fabInNav}>
+                    <Ionicons name="add" size={24} color={colors.light.text} />
+                  </View>
+                );
+              }
+              // When NOT on Home: show a home icon
+              return (
+                <Ionicons name="home-outline" size={28} color="rgba(61,61,61,0.3)" />
+              );
+            },
+          }}
+          listeners={({ navigation, route }) => ({
+            tabPress: (e) => {
+              // If Home tab is already focused, open journal modal
+              const isFocused = navigation.isFocused();
+              if (isFocused) {
+                e.preventDefault();
+                router.push('/journal/new');
+              }
+              // Otherwise, default behavior: navigate to Home
+            },
+          })}
+        />
+
+        {/* Center: Journals */}
+        <Tabs.Screen
+          name="journals"
+          options={{
+            title: 'Journals',
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="book-outline"
+                size={28}
+                color={focused ? colors.light.text : 'rgba(61,61,61,0.3)'}
+              />
+            ),
+          }}
+        />
+
+        {/* Right: Insights */}
+        <Tabs.Screen
+          name="profile"
+          options={{
+            title: 'Insights',
+            tabBarIcon: ({ focused }) => (
+              <Ionicons
+                name="trending-up-outline"
+                size={28}
+                color={focused ? colors.light.text : 'rgba(61,61,61,0.3)'}
+              />
+            ),
+          }}
+        />
       </Tabs>
-      <FloatingAddButton />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 90, // Position above tab bar (60px height + 30px padding)
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    ...shadows.lg,
-    zIndex: 1000,
-    elevation: 8,
-  },
-  fabGradient: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+  fabInNav: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: colors.light.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    ...shadows.lg,
   },
 });

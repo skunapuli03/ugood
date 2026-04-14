@@ -3,7 +3,9 @@ import { useEffect, useRef } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { useUserStore } from "../store/userStore";
 import { NotificationService } from "../services/NotificationService";
+import { BackgroundService } from "../services/BackgroundService";
 import * as Notifications from 'expo-notifications';
+import { loadModel, isModelLoaded } from "../services/localLLM";
 
 export default function RootLayout() {
   const { initialize } = useUserStore();
@@ -12,12 +14,27 @@ export default function RootLayout() {
 
   useEffect(() => {
     initialize();
+    BackgroundService.register();
+
+    // Preload the local LLM in the background to improve response times later
+    const preloadAIModel = async () => {
+      if (!isModelLoaded()) {
+        try {
+          console.log('App launch: preloading AI model...');
+          await loadModel();
+        } catch (e) {
+          console.warn('Failed to preload AI model on launch:', e);
+        }
+      }
+    };
+    preloadAIModel();
 
     // Setup Local Notifications
     NotificationService.requestPermissions().then((granted) => {
       console.log('Notification permissions granted:', granted);
       if (granted) {
-        NotificationService.scheduleDailyCheckIn();
+        NotificationService.scheduleMorningMirror();
+        NotificationService.scheduleStreakSavior();
       }
     });
 
@@ -49,6 +66,13 @@ export default function RootLayout() {
         <Stack.Screen name="sign-in" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen
+          name="journal/emotions"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
           name="journal/new"
           options={{
             presentation: 'modal',
@@ -70,7 +94,14 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
-          name="inbox"
+          name="notifications"
+          options={{
+            presentation: 'modal',
+            animation: 'slide_from_bottom',
+          }}
+        />
+        <Stack.Screen
+          name="settings"
           options={{
             presentation: 'modal',
             animation: 'slide_from_bottom',

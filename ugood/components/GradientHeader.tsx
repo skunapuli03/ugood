@@ -18,7 +18,7 @@ interface GradientHeaderProps {
 export default function GradientHeader({
   title,
   subtitle,
-  gradient = gradients.primary,
+  gradient = [colors.light.background, colors.light.background], // Flat parchment bg
   style,
   showBack = false,
   rightElement,
@@ -38,7 +38,7 @@ export default function GradientHeader({
           style={[styles.backButton, { top: insets.top + 16 }]}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#FFFFFF" />
+          <Ionicons name="chevron-back" size={24} color={colors.light.text} />
         </TouchableOpacity>
       )}
 
@@ -57,21 +57,23 @@ const styles = StyleSheet.create({
   container: {
     padding: 32,
     paddingBottom: 48,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
     alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
   },
   title: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
+    fontWeight: '700',
+    color: colors.light.text, // Charcoal
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Playfair Display',
   },
   subtitle: {
     fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
+    color: 'rgba(61,61,61,0.6)',
     textAlign: 'center',
     lineHeight: 22,
   },

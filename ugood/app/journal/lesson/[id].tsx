@@ -5,20 +5,21 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  SafeAreaView,
   ScrollView,
   Animated,
   Easing,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { getEntryInsights } from '../../../services/aiProcessor';
+import { getEntryInsights, processEntryWithAI } from '../../../services/aiProcessor';
+import { useJournalStore } from '../../../store/journalStore';
 import { supabase } from '../../../services/supabase';
 import { colors, borderRadius, spacing } from '../../../utils/theme';
 import { formatDateTime } from '../../../utils/format';
 
 interface InsightData {
-  lessons?: string[]; // Changed to array
+  lessons?: string[];
   reflection?: string;
   created_at?: string;
 }
@@ -27,13 +28,14 @@ export default function LessonViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const [loading, setLoading] = useState(true);
+  const [generating, setGenerating] = useState(false);
   const [insight, setInsight] = useState<InsightData | null>(null);
   const [journalDate, setJournalDate] = useState<string | null>(null);
+  const [noInsight, setNoInsight] = useState(false);
   const spinValue = new Animated.Value(0);
 
-  // Set up rotation animation
   useEffect(() => {
-    if (loading) {
+    if (loading || generating) {
       Animated.loop(
         Animated.timing(spinValue, {
           toValue: 1,
@@ -43,7 +45,7 @@ export default function LessonViewScreen() {
         })
       ).start();
     }
-  }, [loading]);
+  }, [loading, generating]);
 
   const spin = spinValue.interpolate({
     inputRange: [0, 1],
@@ -68,25 +70,64 @@ export default function LessonViewScreen() {
         setJournalDate(journalData.created_at);
       }
 
-      // 2. Fetch Insights (using existing service)
-      const data = await getEntryInsights(id);
+      // 2. Check for existing insights
+      const data = await getEntryInsights(id as string);
 
-      if (!data) {
-        // Fallback for visual testing if no AI data exists
-        setInsight({
-          lessons: ["Remember to prioritize your peace over temporary approval.", "Trust your intuition; it has guided you well before.", "Embrace the uncertainty as a space for growth, not fear."]
-        });
-      } else {
+      if (data) {
         setInsight(data);
+      } else {
+        // No insight exists yet — show the "Let Me Reflect" button
+        setNoInsight(true);
       }
     } catch (err) {
       console.error('Error loading lesson:', err);
-      // Fallback on error too so user sees UI
-      setInsight({
-        lessons: ["Remember to prioritize your peace over temporary approval.", "Trust your intuition; it has guided you well before."]
-      });
+      setNoInsight(true);
     } finally {
       setLoading(false);
+    }
+  };
+
+  // P1 Priority Interrupt: Generate lesson immediately
+  const handleGenerateNow = async () => {
+    if (!id) return;
+    setGenerating(true);
+    setNoInsight(false);
+
+    try {
+      let entry = useJournalStore.getState().getEntry(id as string);
+      if (!entry) {
+        const { data: fetchEntry } = await supabase
+          .from('journals')
+          .select('*')
+          .eq('id', id)
+          .single();
+        if (fetchEntry) entry = fetchEntry;
+      }
+
+      if (entry) {
+        const pastEntries = useJournalStore.getState().entries;
+        // processEntryWithAI generates + saves to Supabase
+        const insights = await processEntryWithAI(
+          entry.id,
+          `${entry.title || 'Untitled'}\n\n${entry.content}`,
+          entry.mood,
+          entry.user_id,
+          pastEntries
+        );
+        setInsight(insights);
+        console.log('[Lesson] P1 interrupt complete. Lesson generated.');
+      } else {
+        setInsight({
+          lessons: ['Your past self could not find this memory. Please try again later.'],
+        });
+      }
+    } catch (err) {
+      console.error('P1 Generation failed:', err);
+      setInsight({
+        lessons: ['Something went wrong while reflecting. Please try again shortly.'],
+      });
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -94,28 +135,71 @@ export default function LessonViewScreen() {
     router.back();
   };
 
+  // ── Loading state ──
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <Animated.View style={{ transform: [{ rotate: spin }] }}>
-          <Ionicons name="hourglass-outline" size={64} color={colors.light.primary} />
-        </Animated.View>
-        <Text style={styles.loadingText}>Connecting to your past self...</Text>
-        <Text style={styles.loadingSubtext}>Your local AI is reflecting on your journal.</Text>
+        <ActivityIndicator size="large" color={colors.light.accent} />
+        <Text style={styles.loadingText}>Checking for reflections...</Text>
       </View>
     );
   }
 
+  // ── No insight yet: show "Let Me Reflect" button ──
+  if (noInsight && !generating) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.contentContainer}>
+          <View style={styles.iconContainer}>
+            <Ionicons name="hourglass-outline" size={32} color={colors.light.accent} />
+          </View>
+
+          <View style={styles.card}>
+            <Text style={styles.headerTitle}>Not ready yet</Text>
+            {journalDate && (
+              <Text style={styles.dateLabel}>
+                Written {formatDateTime(journalDate)}
+              </Text>
+            )}
+            <Text style={styles.placeholderText}>
+              Your past self hasn't reflected on this entry yet. Tap below to let them take a moment.
+            </Text>
+
+            <TouchableOpacity
+              style={styles.reflectButton}
+              activeOpacity={0.8}
+              onPress={handleGenerateNow}
+            >
+              <Ionicons name="sparkles-outline" size={18} color={colors.light.background} />
+              <Text style={styles.reflectButtonText}>Let Me Reflect</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // ── Generating state ──
+  if (generating) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Animated.View style={{ transform: [{ rotate: spin }] }}>
+          <Ionicons name="hourglass-outline" size={64} color={colors.light.accent} />
+        </Animated.View>
+        <Text style={styles.loadingText}>Reflecting...</Text>
+        <Text style={styles.loadingSubtext}>Your past self is thinking about this one.</Text>
+      </View>
+    );
+  }
+
+  // ── Insight ready ──
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.contentContainer}>
-
-        {/* Header Icon */}
         <View style={styles.iconContainer}>
           <Ionicons name="hourglass-outline" size={32} color={colors.light.primary} />
         </View>
 
-        {/* Main Card Content */}
         <View style={styles.card}>
           <Text style={styles.headerTitle}>From Your Past Self</Text>
           {journalDate && (
@@ -138,11 +222,10 @@ export default function LessonViewScreen() {
           </ScrollView>
 
           <View style={styles.signatureLine}>
-            <Text style={styles.signatureText}>— You</Text>
+            <Text style={styles.signatureText}>You</Text>
           </View>
         </View>
 
-        {/* Action Button */}
         <View style={styles.footer}>
           <TouchableOpacity
             style={styles.actionButton}
@@ -152,7 +235,6 @@ export default function LessonViewScreen() {
             <Text style={styles.actionButtonText}>I hear you</Text>
           </TouchableOpacity>
         </View>
-
       </View>
     </SafeAreaView>
   );
@@ -161,13 +243,13 @@ export default function LessonViewScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F8F9FA', // Surface color (Clean/Flat)
+    backgroundColor: colors.light.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F8F9FA',
+    backgroundColor: colors.light.background,
   },
   loadingText: {
     marginTop: 24,
@@ -177,7 +259,7 @@ const styles = StyleSheet.create({
   },
   loadingSubtext: {
     marginTop: 8,
-    color: colors.light.textSecondary,
+    color: 'rgba(61,61,61,0.6)',
     fontSize: 14,
     textAlign: 'center',
     paddingHorizontal: 40,
@@ -193,39 +275,37 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
-    backgroundColor: '#EEF2FF', // Very light indigo tint
+    backgroundColor: 'rgba(61,61,61,0.05)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   card: {
     width: '100%',
-    backgroundColor: '#FFFFFF',
-    borderRadius: borderRadius.xl,
+    backgroundColor: 'rgba(61,61,61,0.03)',
+    borderRadius: borderRadius.xxl,
     padding: spacing.xl,
     paddingBottom: spacing.lg,
     alignItems: 'center',
-    // Editorial Shadow (subtle but crisp)
-    shadowColor: '#1F2937',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
     maxHeight: '70%',
   },
   headerTitle: {
     fontSize: 24,
-    fontWeight: '700', // Bold Sans for modern editorial feel
-    color: '#111827', // Slate-900
+    fontWeight: '700',
+    color: colors.light.text,
     marginBottom: spacing.xs,
     textAlign: 'center',
   },
   dateLabel: {
-    fontSize: 14,
-    color: colors.light.textSecondary,
+    fontSize: 12,
+    color: 'rgba(61,61,61,0.5)',
     marginBottom: spacing.xl,
     textTransform: 'uppercase',
-    letterSpacing: 1,
-    fontWeight: '500',
+    letterSpacing: 2,
+    fontWeight: '600',
   },
   scrollView: {
     width: '100%',
@@ -234,7 +314,7 @@ const styles = StyleSheet.create({
   lessonText: {
     fontSize: 18,
     lineHeight: 28,
-    color: '#374151',
+    color: colors.light.text,
     textAlign: 'center',
     fontWeight: '400',
   },
@@ -244,7 +324,7 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: 1,
-    backgroundColor: '#F3F4F6',
+    backgroundColor: 'rgba(61,61,61,0.1)',
     width: '40%',
     alignSelf: 'center',
     marginVertical: spacing.xs,
@@ -256,9 +336,37 @@ const styles = StyleSheet.create({
   },
   signatureText: {
     fontSize: 16,
-    color: colors.light.primary, // Indigo signature
-    fontWeight: '600',
+    color: 'rgba(61,61,61,0.6)',
+    fontWeight: '500',
     fontStyle: 'italic',
+  },
+  placeholderText: {
+    fontSize: 16,
+    lineHeight: 26,
+    color: 'rgba(61,61,61,0.6)',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  reflectButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: colors.light.text,
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 100,
+    shadowColor: '#3D3D3D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  reflectButtonText: {
+    color: colors.light.background,
+    fontSize: 16,
+    fontWeight: '600',
+    letterSpacing: 0.3,
   },
   footer: {
     position: 'absolute',
@@ -267,19 +375,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   actionButton: {
-    backgroundColor: colors.light.primary, // Indigo
+    backgroundColor: colors.light.text,
     paddingVertical: 16,
     paddingHorizontal: 48,
-    borderRadius: 100, // Pill shape
-    // Subtle shadow for lift
-    shadowColor: colors.light.primary,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    borderRadius: 100,
   },
   actionButtonText: {
-    color: '#FFFFFF',
+    color: colors.light.background,
     fontSize: 16,
     fontWeight: '600',
     letterSpacing: 0.5,

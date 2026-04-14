@@ -7,6 +7,7 @@ const MODEL_DIR = FileSystem.documentDirectory + 'models/';
 const MODEL_PATH = MODEL_DIR + 'qwen.gguf';  // Match the model being downloaded
 
 let context: LlamaContext | null = null;
+let currentTask: string | null = null;
 let isGenerating = false;
 
 export const isModelDownloaded = async (): Promise<boolean> => {
@@ -60,14 +61,17 @@ export const unloadModel = (): void => {
 
 export const isModelLoaded = (): boolean => context !== null;
 
-export const generate = async (prompt: string): Promise<string> => {
+export const generate = async (prompt: string, taskName: string = 'General AI Task'): Promise<string> => {
     if (!context) throw new Error('Model not loaded');
+    
     if (isGenerating) {
-        console.warn('Model is currently busy. Queueing request is not supported yet, returning fallback.');
+        console.warn(`[AI] Busy: Cannot start "${taskName}" because "${currentTask || 'another task'}" is active.`);
         throw new Error('LLM_BUSY');
     }
 
+    console.log(`[AI] Starting: ${taskName}`);
     isGenerating = true;
+    currentTask = taskName;
     try {
         const result = await context.completion({
             prompt,
@@ -80,5 +84,6 @@ export const generate = async (prompt: string): Promise<string> => {
         return result.text;
     } finally {
         isGenerating = false;
+        currentTask = null;
     }
 };

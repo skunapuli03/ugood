@@ -78,23 +78,24 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     justifyContent: 'center',
     alignItems: 'center',
   },
   menuContainer: {
-    backgroundColor: colors.light.card,
-    borderRadius: borderRadius.lg,
-    padding: 8,
-    minWidth: 200,
-    ...shadows.lg,
+    backgroundColor: 'rgba(255,255,255,0.95)',
+    borderRadius: borderRadius.xxl, // 32
+    padding: 12,
+    minWidth: 220,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   menuItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 12,
+    padding: 16,
     gap: 12,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.xl,
   },
   menuItemText: {
     fontSize: 16,
@@ -104,7 +105,10 @@ const styles = StyleSheet.create({
   deleteItem: {
     marginTop: 4,
     borderTopWidth: 1,
-    borderTopColor: colors.light.border,
+    borderTopColor: 'rgba(61,61,61,0.05)',
+    borderRadius: 0,
+    borderBottomLeftRadius: borderRadius.xl,
+    borderBottomRightRadius: borderRadius.xl,
   },
   deleteText: {
     color: '#EF4444',

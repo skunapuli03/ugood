@@ -9,159 +9,185 @@ import {
   Platform,
   ActivityIndicator,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useRouter, useLocalSearchParams } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useUserStore } from '../../store/userStore';
 import { useJournalStore } from '../../store/journalStore';
-import { colors } from '../../utils/theme';
+import { colors, borderRadius, shadows } from '../../utils/theme';
 
 export default function NewEntryScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams();
   const { user } = useUserStore();
   const { createEntry, loading } = useJournalStore();
+  
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
 
+  // Parse emotions array from params if it exists
+  const emotionsRaw = params.emotions as string;
+  const emotions: string[] = emotionsRaw ? JSON.parse(emotionsRaw) : [];
+  const isGuidedFlow = emotions.length > 0;
+
   const handleDone = async () => {
-    if (!content.trim()) {
+    if (!content.trim() || !user) {
       router.back();
       return;
     }
 
-    if (!user) {
-      router.back();
-      return;
-    }
+    const moodString = emotions.join(',');
 
-
-    const entry = await createEntry(user.id, title.trim() || 'Untitled Entry', content.trim());
-    if (entry) {
-      router.back();
+    // Create entry with the passed emotions
+    const entry = await createEntry(
+      user.id, 
+      title.trim() || 'Untitled Entry', 
+      content.trim(),
+      moodString
+    );
+    
+    // Instantly close, regardless of success/fail to keep UX fast
+    if (isGuidedFlow) {
+      // If we came from Home -> Emotions -> New, pop back twice to Home
+      router.dismissAll(); 
     } else {
       router.back();
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={styles.container}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      >
-        {/* Simple header */}
-        <View style={styles.header}>
-          <TouchableOpacity onPress={() => router.back()} style={styles.cancelButton}>
-            <Text style={styles.cancelText}>Cancel</Text>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      {/* Header Area */}
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 24) }]}>
+        
+        {/* Progress Bars - show 2 active if guided flow */}
+        {isGuidedFlow && (
+          <View style={styles.progressContainer}>
+            <View style={[styles.progressBar, styles.progressActive]} />
+            <View style={[styles.progressBar, styles.progressActive]} />
+          </View>
+        )}
+
+        <View style={styles.headerTop}>
+          <TouchableOpacity 
+            onPress={() => isGuidedFlow ? router.dismissAll() : router.back()} 
+            style={styles.closeButton}
+            hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
+          >
+            <Ionicons name="close" size={32} color="rgba(61,61,61,0.7)" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>New Entry</Text>
+
           <TouchableOpacity
             onPress={handleDone}
             disabled={loading || !content.trim()}
-            style={[styles.doneButton, (!content.trim()) && styles.doneButtonDisabled]}
+            style={styles.doneButton}
           >
             {loading ? (
-              <View style={styles.loadingWrapper}>
-                <ActivityIndicator color={colors.light.primary} size="small" />
-              </View>
+              <ActivityIndicator color={colors.light.text} size="small" />
             ) : (
-              <Text style={[styles.doneText, (!content.trim()) && styles.doneTextDisabled]}>Done</Text>
+              <Text style={[styles.doneText, (!content.trim()) && styles.doneTextDisabled]}>
+                Done
+              </Text>
             )}
           </TouchableOpacity>
         </View>
+      </View>
 
-        {/* Title input */}
+      {/* Editor Area */}
+      <View style={styles.editor}>
         <TextInput
           style={styles.titleInput}
-          placeholder="Title (optional)"
-          placeholderTextColor={colors.light.textSecondary}
+          placeholder="New Entry..."
+          placeholderTextColor="rgba(61,61,61,0.3)"
           value={title}
           onChangeText={setTitle}
           autoFocus={false}
+          returnKeyType="next"
         />
 
-        {/* Content input */}
         <TextInput
           style={styles.contentInput}
-          placeholder="What's on your mind?"
-          placeholderTextColor={colors.light.textSecondary}
+          placeholder="Start writing..."
+          placeholderTextColor="rgba(61,61,61,0.3)"
           value={content}
           onChangeText={setContent}
           multiline
           textAlignVertical="top"
-          autoFocus
+          autoFocus={true}
         />
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+      </View>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.light.background,
+    backgroundColor: colors.light.background, // #F5F2EA
   },
   header: {
+    paddingHorizontal: 24,
+    marginBottom: 8,
+  },
+  progressContainer: {
+    flexDirection: 'row',
+    gap: 8,
+    marginBottom: 16,
+  },
+  progressBar: {
+    flex: 1,
+    height: 4,
+    backgroundColor: 'rgba(61,61,61,0.1)',
+    borderRadius: 2,
+  },
+  progressActive: {
+    backgroundColor: colors.light.text,
+  },
+  headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.light.border,
   },
-  cancelButton: {
-    padding: 8,
-  },
-  cancelText: {
-    fontSize: 17,
-    color: colors.light.primary,
-  },
-  headerTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: colors.light.text,
+  closeButton: {
+    padding: 4,
+    marginLeft: -4,
   },
   doneButton: {
-    padding: 8,
-    minWidth: 60,
-    alignItems: 'flex-end',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   doneText: {
-    fontSize: 17,
-    fontWeight: '600',
-    color: colors.light.primary,
-  },
-  doneTextDisabled: {
-    color: '#D1D5DB',
-  },
-  doneButtonDisabled: {
-    opacity: 0.6,
-  },
-  loadingWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: colors.light.primary,
-    fontWeight: '500',
-  },
-  titleInput: {
-    fontSize: 28,
+    fontSize: 15,
     fontWeight: '700',
     color: colors.light.text,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.light.border,
+  },
+  doneTextDisabled: {
+    color: 'rgba(61,61,61,0.3)',
+  },
+  editor: {
+    flex: 1,
+    paddingHorizontal: 24,
+  },
+  titleInput: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.light.text,
+    marginBottom: 16,
+    // Playfair Display style
   },
   contentInput: {
     flex: 1,
-    fontSize: 17,
-    color: colors.light.text,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    lineHeight: 24,
+    fontSize: 16,
+    lineHeight: 26,
+    color: 'rgba(61,61,61,0.9)',
+    paddingBottom: 40,
   },
 });

@@ -11,11 +11,10 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { signInWithApple, signInWithGoogle, signInWithEmail, signUpWithEmail } from '../services/auth';
 import { useUserStore } from '../store/userStore';
-import { colors, gradients, borderRadius, shadows } from '../utils/theme';
+import { colors, borderRadius } from '../utils/theme';
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -104,24 +103,20 @@ export default function SignInScreen() {
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
-      <LinearGradient
-        colors={gradients.primary}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.header}
-      >
-        <Text style={styles.title}>Welcome to UGood</Text>
+      {/* Flat Editorial Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Welcome to{'\n'}UGood</Text>
         <Text style={styles.subtitle}>Your personal journaling companion</Text>
-      </LinearGradient>
+      </View>
 
       <View style={styles.form}>
         {isSignUp && (
           <View style={styles.inputContainer}>
-            <Ionicons name="person-outline" size={20} color={colors.light.textSecondary} style={styles.inputIcon} />
+            <Ionicons name="person-outline" size={20} color="rgba(61,61,61,0.4)" style={styles.inputIcon} />
             <TextInput
               style={styles.input}
               placeholder="Full Name"
-              placeholderTextColor={colors.light.textSecondary}
+              placeholderTextColor="rgba(61,61,61,0.3)"
               value={name}
               onChangeText={setName}
               autoCapitalize="words"
@@ -131,11 +126,11 @@ export default function SignInScreen() {
         )}
 
         <View style={styles.inputContainer}>
-          <Ionicons name="mail-outline" size={20} color={colors.light.textSecondary} style={styles.inputIcon} />
+          <Ionicons name="mail-outline" size={20} color="rgba(61,61,61,0.4)" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor={colors.light.textSecondary}
+            placeholderTextColor="rgba(61,61,61,0.3)"
             value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
@@ -145,11 +140,11 @@ export default function SignInScreen() {
         </View>
 
         <View style={styles.inputContainer}>
-          <Ionicons name="lock-closed-outline" size={20} color={colors.light.textSecondary} style={styles.inputIcon} />
+          <Ionicons name="lock-closed-outline" size={20} color="rgba(61,61,61,0.4)" style={styles.inputIcon} />
           <TextInput
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor={colors.light.textSecondary}
+            placeholderTextColor="rgba(61,61,61,0.3)"
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -157,10 +152,12 @@ export default function SignInScreen() {
           />
         </View>
 
+        {/* Primary CTA — Charcoal pill */}
         <TouchableOpacity
           style={[styles.button, styles.primaryButton]}
           onPress={handleEmailAuth}
           disabled={loading}
+          activeOpacity={0.8}
         >
           {loading ? (
             <ActivityIndicator color="#FFFFFF" />
@@ -174,7 +171,7 @@ export default function SignInScreen() {
         <TouchableOpacity
           onPress={() => {
             setIsSignUp(!isSignUp);
-            setName(''); // Clear name when switching modes
+            setName('');
           }}
           style={styles.toggleButton}
         >
@@ -194,6 +191,7 @@ export default function SignInScreen() {
             style={[styles.button, styles.appleButton]}
             onPress={handleAppleSignIn}
             disabled={loading}
+            activeOpacity={0.8}
           >
             <Ionicons name="logo-apple" size={20} color="#FFFFFF" />
             <Text style={styles.buttonText}>Continue with Apple</Text>
@@ -204,6 +202,7 @@ export default function SignInScreen() {
           style={[styles.button, styles.googleButton]}
           onPress={handleGoogleSignIn}
           disabled={loading}
+          activeOpacity={0.8}
         >
           <Ionicons name="logo-google" size={20} color={colors.light.text} />
           <Text style={[styles.buttonText, styles.googleButtonText]}>Continue with Google</Text>
@@ -216,42 +215,41 @@ export default function SignInScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.light.background,
+    backgroundColor: colors.light.background, // Warm parchment
   },
   contentContainer: {
     flexGrow: 1,
   },
   header: {
-    padding: 32,
-    paddingTop: 80,
-    paddingBottom: 40,
-    borderBottomLeftRadius: 32,
-    borderBottomRightRadius: 32,
-    alignItems: 'center',
+    paddingHorizontal: 32,
+    paddingTop: 100,
+    paddingBottom: 48,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 8,
+    fontSize: 36,
+    fontWeight: '700',
+    color: colors.light.text, // Charcoal
+    lineHeight: 44,
+    // Playfair Display would be set via fontFamily when loaded
   },
   subtitle: {
     fontSize: 16,
-    color: '#FFFFFF',
-    opacity: 0.9,
+    color: 'rgba(61,61,61,0.6)', // 60% charcoal
+    marginTop: 12,
   },
   form: {
-    padding: 24,
-    gap: 16,
+    paddingHorizontal: 32,
+    gap: 14,
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.light.surface,
-    borderRadius: borderRadius.md,
-    paddingHorizontal: 16,
+    backgroundColor: 'rgba(255,255,255,0.5)', // white/50 translucent
+    borderRadius: borderRadius.xl,
+    paddingHorizontal: 20,
     height: 56,
-    ...shadows.sm,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   inputIcon: {
     marginRight: 12,
@@ -263,23 +261,27 @@ const styles = StyleSheet.create({
   },
   button: {
     height: 56,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.xl,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 8,
-    ...shadows.md,
+    gap: 10,
   },
   primaryButton: {
-    backgroundColor: colors.light.primary,
+    backgroundColor: colors.light.text, // Charcoal
+    shadowColor: '#3D3D3D',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
   },
   appleButton: {
     backgroundColor: '#000000',
   },
   googleButton: {
-    backgroundColor: colors.light.card,
+    backgroundColor: 'rgba(255,255,255,0.5)',
     borderWidth: 1,
-    borderColor: colors.light.border,
+    borderColor: 'rgba(0,0,0,0.05)',
   },
   buttonText: {
     fontSize: 16,
@@ -295,7 +297,7 @@ const styles = StyleSheet.create({
   },
   toggleText: {
     fontSize: 14,
-    color: colors.light.primary,
+    color: colors.light.accent, // Lavender
     fontWeight: '500',
   },
   divider: {
@@ -306,14 +308,12 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: colors.light.border,
+    backgroundColor: 'rgba(0,0,0,0.05)',
   },
   dividerText: {
     marginHorizontal: 16,
     fontSize: 14,
-    color: colors.light.textSecondary,
+    color: 'rgba(61,61,61,0.4)',
     fontWeight: '500',
   },
 });
-
-

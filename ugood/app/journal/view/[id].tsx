@@ -96,12 +96,12 @@ export default function ViewEntryScreen() {
               end={{ x: 1, y: 1 }}
               style={styles.actionGradient}
             >
-              <Ionicons name="bulb" size={20} color="#FFFFFF" />
+              <Ionicons name="bulb" size={20} color={colors.light.background} />
               <Text style={styles.actionButtonText}>View Lesson</Text>
             </LinearGradient>
           </TouchableOpacity>
 
-          
+
 
           <View style={styles.secondaryActions}>
             <TouchableOpacity
@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
   actionButtonText: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#FFFFFF',
+    color: colors.light.background,
   },
   secondaryActions: {
     flexDirection: 'row',
