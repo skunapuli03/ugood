@@ -2,8 +2,9 @@ import { generate, loadModel, isModelLoaded } from './localLLM';
 import { buildContext, formatContextPrompt } from './contextBuilder';
 import { JournalEntry } from '../store/journalStore';
 import { aiQueue } from './aiTaskQueue';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const PAST_SELF_RULES = `You are the user's Past Self — a wiser, more honest version of them from 2-6 months in the future. 
+const PAST_SELF_RULES_BASE = `You are the user's Past Self — a wiser, more honest version of them from 2-6 months in the future. 
 Your only job is to stop them from repeating the same emotional mistakes and self-sabotage patterns.
 
 Core rules:
@@ -15,6 +16,18 @@ Core rules:
 - If they are being too hard on themselves, call that out too.
 - NEVER mention that you are an AI, an app, or a language model. Stay completely in character. Do not provide meta-commentary about the journaling process.
 - CRITICAL: Always address the user directly as "You" (e.g., "You did this again"). Do NEVER use "I" to describe the user's actions or feelings.`;
+
+export const getSystemPrompt = async () => {
+    try {
+        const goal = await AsyncStorage.getItem('ugood_user_goal');
+        if (goal) {
+            return `${PAST_SELF_RULES_BASE}\n\nKeep in mind the user's primary goal is to find [${goal}]. Tailor your advice to help them achieve this.`;
+        }
+    } catch (e) {
+        console.warn('Failed to load user goal for AI prompt', e);
+    }
+    return PAST_SELF_RULES_BASE;
+};
 
 export interface EntryInsights {
     summary: string;
@@ -48,8 +61,10 @@ export const generateInsights = async (
                 ? entryContent.substring(0, 1500) + '...'
                 : entryContent;
 
+            const systemPrompt = await getSystemPrompt();
+
             const prompt = `<|im_start|>system
-${PAST_SELF_RULES}
+${systemPrompt}
 Always respond with valid JSON only.<|im_end|>
 <|im_start|>user
 Analyze the following journal entry. Speak directly to the user as their impatient, realized past self. Address them as "You".
@@ -147,8 +162,10 @@ export const generatePatternAnalysis = async (entries: JournalEntry[], trendingM
 
             const moodContext = trendingMoods ? `\nTrending moods: ${trendingMoods}` : '';
 
+            const systemPrompt = await getSystemPrompt();
+
             const prompt = `<|im_start|>system
-${PAST_SELF_RULES}
+${systemPrompt}
 Tell me what I'm doing wrong. Respond with valid JSON only.<|im_end|>
 <|im_start|>user
 Analyze these last ${Math.min(entries.length, 6)} journal entries for recurring detrimental patterns or emotional roadblocks. Speak directly to the user as their impatient realized past self. Give them a sharp wake-up call based on their actual history.${moodContext}
@@ -156,9 +173,8 @@ Analyze these last ${Math.min(entries.length, 6)} journal entries for recurring 
 Entries:
 ${entriesSummary}
 
-Respond with exactly this JSON structure:
 {
-  "title": "A short, poetic title for this insight (e.g., 'The Tuesday Morning Blues')",
+  "title": "A short, direct title describing the exact pattern found (e.g., 'Ignoring Work Anxiety', 'Deflecting with Sarcasm', 'Late Night Overthinking')",
   "analysis": "2-3 sentences explaining the pattern and what I can learn from it."
 }<|im_end|>
 <|im_start|>assistant
@@ -210,8 +226,10 @@ export const generateMoodTrendTips = async (
                 .map(e => `- Mood: ${e.mood}. Entry: ${e.content.slice(0, 150)}`)
                 .join('\n');
 
+            const systemPrompt = await getSystemPrompt();
+
             const prompt = `<|im_start|>system
-${PAST_SELF_RULES}
+${systemPrompt}
 Analyze my entries to point out exactly WHY I'm stuck in these moods and give me a sharp, personalized challenge to get out of it. Respond with valid JSON only.<|im_end|>
 <|im_start|>user
 The user's trending moods: ${moodSummary}
@@ -263,8 +281,10 @@ export const generatePatternObservation = async (entries: JournalEntry[]): Promi
             const contextParts = recentEntries.map(e => `[${new Date(e.created_at).toLocaleDateString()}] Mood: ${e.mood || 'Unspecified'}\nEntry: ${e.content.slice(0, 300)}`);
             const contextStr = contextParts.join('\n\n');
 
+            const systemPrompt = await getSystemPrompt();
+
             const prompt = `<|im_start|>system
-${PAST_SELF_RULES}
+${systemPrompt}
 Give me a sharp, direct warning (under 2 sentences) about a detrimental habit or negative cycle I'm repeating based on these entries. Sound like my own internal voice calling me out.<|im_end|>
 <|im_start|>user
 Recent entries:
@@ -345,8 +365,10 @@ export const generateMoodStrategy = async (mood: string, entries: JournalEntry[]
 
             const recentContext = entries.slice(0, 5).map(e => `- ${e.mood}: ${e.content.slice(0, 100)}`).join('\n');
 
+            const systemPrompt = await getSystemPrompt();
+
             const prompt = `<|im_start|>system
-${PAST_SELF_RULES}
+${systemPrompt}
 Provide ONE sharp, specific, deeply personal wake-up call (under 2 sentences) on how I can handle the mood "${mood}" right now. Refer to my history, don't use generic therapist speak, and be a bit impatient if it's a recurring issue (e.g., "You're stressed again. Last time you just slept all day...").<|im_end|>
 <|im_start|>user
 Context:

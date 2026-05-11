@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,58 +7,118 @@ import {
   Easing,
   TouchableOpacity,
   Dimensions,
+  TextInput,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+  ActivityIndicator,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
-import { downloadModel, isModelDownloaded } from '../services/localLLM';
-import { colors, spacing, borderRadius } from '../utils/theme';
 import { Ionicons } from '@expo/vector-icons';
+import { downloadModel, isModelDownloaded } from '../services/localLLM';
+import { signInWithEmail, signUpWithEmail } from '../services/auth';
+import { useUserStore } from '../store/userStore';
+import { colors, borderRadius, shadows } from '../utils/theme';
+import AppLogo from '../components/AppLogo';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 
-// ── Phase 1: Cinematic lines ──
-const STORY_LINES = [
-  'Every day, you feel things.',
-  'Some you notice. Some you don\'t.',
-  'What if you could look back\nand actually understand yourself?',
-  'UGood.\nA journal that cares.',
+const FACTS = [
+  "Naming an emotion reduces activity in your amygdala. You literally calm your brain just by finding the right word.",
+  "We forget 90% of our daily experiences within a week. The moments shaping you are quietly slipping away.",
+  "This is your space. No judgment, no audience. Just a quiet moment for you.",
 ];
 
-// ── Phase 2: Quiz questions ──
-const QUIZ = [
-  {
-    question: 'What brought you here?',
-    options: ['Self reflection', 'Track my moods', 'Build a habit', 'Just curious'],
-  },
-  {
-    question: 'How often do you reflect on your day?',
-    options: ['Daily', 'Sometimes', 'Rarely', 'Never tried'],
-  },
-  {
-    question: 'One thing you value most?',
-    options: ['Honesty', 'Growth', 'Peace', 'Connection'],
-  },
+// Hold times per fact (ms after fade-in completes)
+const FACT_HOLD_TIMES = [8000, 7500, 7000];
+
+const WHY_OPTIONS = [
+  "Clarity in the chaos",
+  "Breaking old habits",
+  "Understanding my emotions",
+  "Other"
 ];
 
-type Phase = 'story' | 'quiz' | 'trust';
+// ── Pulsing Dots Component ──
+const PulsingDots = () => {
+  const dot1 = useRef(new Animated.Value(0.3)).current;
+  const dot2 = useRef(new Animated.Value(0.3)).current;
+  const dot3 = useRef(new Animated.Value(0.3)).current;
+
+  useEffect(() => {
+    const createPulse = (anim: Animated.Value, delay: number) =>
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(anim, { toValue: 1, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+          Animated.timing(anim, { toValue: 0.3, duration: 800, easing: Easing.inOut(Easing.ease), useNativeDriver: true }),
+        ])
+      );
+    createPulse(dot1, 0).start();
+    createPulse(dot2, 250).start();
+    createPulse(dot3, 500).start();
+  }, []);
+
+  return (
+    <View style={styles.dotsContainer}>
+      {[dot1, dot2, dot3].map((anim, i) => (
+        <Animated.View key={i} style={[styles.dot, { opacity: anim }]} />
+      ))}
+    </View>
+  );
+};
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { session, setSession, setUser } = useUserStore();
 
   // ── State ──
-  const [phase, setPhase] = useState<Phase>('story');
-  const [storyIndex, setStoryIndex] = useState(0);
-  const [quizIndex, setQuizIndex] = useState(0);
-  const [quizAnswers, setQuizAnswers] = useState<string[]>([]);
-  const [progress, setProgress] = useState(0);
+  const [phase, setPhase] = useState<'facts' | 'auth-name' | 'auth-secure' | 'why'>('facts');
+  const [factIndex, setFactIndex] = useState(0);
   const [downloadReady, setDownloadReady] = useState(false);
+
+  // Auth Phase
+  const [isSignUp, setIsSignUp] = useState(true);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [name, setName] = useState('');
+  const [authLoading, setAuthLoading] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+
+  // Why Phase
+  const [selectedWhy, setSelectedWhy] = useState<string | null>(null);
+  const [customWhy, setCustomWhy] = useState('');
+  const [showCustomInput, setShowCustomInput] = useState(false);
 
   // ── Animations ──
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const slideAnim = useRef(new Animated.Value(30)).current;
-  const quizFade = useRef(new Animated.Value(0)).current;
-  const trustFade = useRef(new Animated.Value(0)).current;
-  const buttonScale = useRef(new Animated.Value(0.9)).current;
+  const authNameFadeAnim = useRef(new Animated.Value(0)).current;
+  const authSecureFadeAnim = useRef(new Animated.Value(0)).current;
+  const lockScaleAnim = useRef(new Animated.Value(1)).current;
+  const whyFadeAnim = useRef(new Animated.Value(0)).current;
+
+  // Book-to-Lock spin animation
+  const spinAnim = useRef(new Animated.Value(0)).current;
+  const [showLockIcon, setShowLockIcon] = useState(false);
+
+  const bookRotate = spinAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['0deg', '90deg', '90deg'],
+  });
+  const bookOpacity = spinAnim.interpolate({
+    inputRange: [0, 0.45, 0.5],
+    outputRange: [1, 1, 0],
+  });
+  const lockRotate = spinAnim.interpolate({
+    inputRange: [0, 0.5, 1],
+    outputRange: ['-90deg', '-90deg', '0deg'],
+  });
+  const lockOpacity = spinAnim.interpolate({
+    inputRange: [0.5, 0.55, 1],
+    outputRange: [0, 1, 1],
+  });
 
   // ── Start download immediately on mount ──
   useEffect(() => {
@@ -68,430 +128,599 @@ export default function OnboardingScreen() {
   const startDownload = async () => {
     const downloaded = await isModelDownloaded();
     if (downloaded) {
-      setProgress(1);
       setDownloadReady(true);
-      await AsyncStorage.setItem('ai_onboarding_complete', 'true');
       return;
     }
-
     try {
       await downloadModel((prog) => {
-        setProgress(prog);
         if (prog >= 1) {
           setDownloadReady(true);
-          AsyncStorage.setItem('ai_onboarding_complete', 'true');
         }
       });
+      // Bug fix: download resolved means it's done, even if progress didn't hit exactly 1.0
+      setDownloadReady(true);
     } catch (e: any) {
       console.error('Download failed:', e);
+      setDownloadReady(true); // Proceed anyway on fail
     }
   };
 
-  // ── Phase 1: Cinematic text reveals ──
+  // ── Fact Transitions ──
   useEffect(() => {
-    if (phase !== 'story') return;
-    animateIn();
-  }, [storyIndex, phase]);
+    if (phase !== 'facts') return;
 
-  useEffect(() => {
-    if (phase !== 'story') return;
+    // Fade in
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 1500,
+      easing: Easing.out(Easing.ease),
+      useNativeDriver: true,
+    }).start();
 
-    const timer = setTimeout(() => {
-      if (storyIndex < STORY_LINES.length - 1) {
-        animateOut(() => setStoryIndex(prev => prev + 1));
-      } else {
-        // Last line shown, transition to quiz after pause
-        setTimeout(() => {
-          animateOut(() => setPhase('quiz'));
-        }, 2000);
-      }
-    }, 3500);
+    const isLastFact = factIndex === FACTS.length - 1;
+    let timer: any;
+
+    const transitionOut = () => {
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 1500,
+        useNativeDriver: true,
+      }).start(() => {
+        if (isLastFact) {
+          if (session) {
+            setPhase('why');
+          } else {
+            setPhase('auth-name');
+          }
+        } else {
+          setFactIndex(prev => prev + 1);
+        }
+      });
+    };
+
+    if (!isLastFact) {
+      timer = setTimeout(transitionOut, FACT_HOLD_TIMES[factIndex]);
+    } else {
+      // Last fact: Wait for download to finish + minimum reading time
+      const startTime = Date.now();
+      const checkReady = setInterval(() => {
+        if (downloadReady && (Date.now() - startTime > FACT_HOLD_TIMES[factIndex])) {
+          clearInterval(checkReady);
+          transitionOut();
+        }
+      }, 500);
+      return () => clearInterval(checkReady);
+    }
 
     return () => clearTimeout(timer);
-  }, [storyIndex, phase]);
+  }, [factIndex, phase, downloadReady, session]);
 
-  const animateIn = () => {
-    fadeAnim.setValue(0);
-    slideAnim.setValue(30);
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
+  // ── Auth Name Phase Entrance ──
+  useEffect(() => {
+    if (phase === 'auth-name') {
+      Animated.timing(authNameFadeAnim, {
         toValue: 1,
-        duration: 800,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        easing: Easing.out(Easing.ease),
-        useNativeDriver: true,
-      }),
-    ]).start();
-  };
-
-  const animateOut = (callback: () => void) => {
-    Animated.timing(fadeAnim, {
-      toValue: 0,
-      duration: 500,
-      useNativeDriver: true,
-    }).start(() => callback());
-  };
-
-  // ── Phase 2: Quiz entrance ──
-  useEffect(() => {
-    if (phase !== 'quiz') return;
-    quizFade.setValue(0);
-    Animated.timing(quizFade, {
-      toValue: 1,
-      duration: 600,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start();
-  }, [phase, quizIndex]);
-
-  const handleQuizAnswer = useCallback((answer: string) => {
-    const newAnswers = [...quizAnswers, answer];
-    setQuizAnswers(newAnswers);
-
-    // Save for future personalization
-    AsyncStorage.setItem('ugood_quiz_answers', JSON.stringify(newAnswers));
-
-    if (quizIndex < QUIZ.length - 1) {
-      // Fade out, then next question
-      Animated.timing(quizFade, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start(() => setQuizIndex(prev => prev + 1));
-    } else {
-      // All answered, proceed to trust phase
-      Animated.timing(quizFade, {
-        toValue: 0,
-        duration: 400,
-        useNativeDriver: true,
-      }).start(() => setPhase('trust'));
-    }
-  }, [quizAnswers, quizIndex]);
-
-  // ── Phase 3: Trust entrance ──
-  useEffect(() => {
-    if (phase !== 'trust') return;
-    trustFade.setValue(0);
-    buttonScale.setValue(0.9);
-    Animated.timing(trustFade, {
-      toValue: 1,
-      duration: 800,
-      easing: Easing.out(Easing.ease),
-      useNativeDriver: true,
-    }).start();
-  }, [phase]);
-
-  // Button bounce when download completes
-  useEffect(() => {
-    if (downloadReady && phase === 'trust') {
-      Animated.spring(buttonScale, {
-        toValue: 1,
-        friction: 4,
-        tension: 80,
+        duration: 1000,
         useNativeDriver: true,
       }).start();
     }
-  }, [downloadReady, phase]);
+  }, [phase]);
 
-  const handleEnter = () => {
-    if (downloadReady) {
-      router.replace('/(tabs)');
+  // ── Book-to-Lock Spin + Auth Secure Phase ──
+  const handleNameContinue = () => {
+    if (!name.trim()) {
+      Alert.alert('Hey', 'We need a name to personalize your experience.');
+      return;
+    }
+
+    // Fade out the name form
+    Animated.timing(authNameFadeAnim, {
+      toValue: 0,
+      duration: 500,
+      useNativeDriver: true,
+    }).start(() => {
+      // Now spin the book into a lock
+      setShowLockIcon(true);
+      Animated.timing(spinAnim, {
+        toValue: 1,
+        duration: 700,
+        easing: Easing.inOut(Easing.ease),
+        useNativeDriver: true,
+      }).start(() => {
+        // After spin completes, show the secure form
+        setPhase('auth-secure');
+      });
+    });
+  };
+
+  // ── Auth Secure Phase Entrance ──
+  useEffect(() => {
+    if (phase === 'auth-secure') {
+      Animated.timing(authSecureFadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [phase]);
+
+  const handleAuthSubmit = async () => {
+    if (!email || !password) {
+      Alert.alert('Missing Info', 'Please fill in all fields to secure your journal.');
+      return;
+    }
+
+    setAuthLoading(true);
+    try {
+      const { data, error } = isSignUp
+        ? await signUpWithEmail(email, password, name.trim())
+        : await signInWithEmail(email, password);
+
+      if (error) throw error;
+
+      if (data?.session) {
+        setSession(data.session);
+        setUser(data.session.user);
+
+        // Lock snap animation: dilate + lock shut
+        setIsLocked(true);
+        Animated.sequence([
+          Animated.timing(lockScaleAnim, { toValue: 1.4, duration: 200, useNativeDriver: true }),
+          Animated.spring(lockScaleAnim, { toValue: 1, friction: 3, tension: 40, useNativeDriver: true })
+        ]).start();
+
+        // Hold on locked state, then transition to "Why"
+        setTimeout(() => {
+          Animated.timing(authSecureFadeAnim, {
+            toValue: 0,
+            duration: 800,
+            useNativeDriver: true,
+          }).start(() => {
+            setPhase('why');
+          });
+        }, 1200);
+
+      } else if (isSignUp && data?.user) {
+        Alert.alert('Verify Email', 'Please check your email to verify your account. Then sign in.');
+        setIsSignUp(false);
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err.message);
+    } finally {
+      setAuthLoading(false);
     }
   };
 
+  // ── Why Phase Entrance ──
+  useEffect(() => {
+    if (phase === 'why') {
+      Animated.timing(whyFadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [phase]);
+
+  const handleSelectWhy = (option: string) => {
+    if (option === "Other") {
+      setShowCustomInput(true);
+      setSelectedWhy("Other");
+    } else {
+      setSelectedWhy(option);
+      setShowCustomInput(false);
+      finishOnboarding(option);
+    }
+  };
+
+  const handleCustomSubmit = () => {
+    if (customWhy.trim()) {
+      finishOnboarding(customWhy.trim());
+    }
+  };
+
+  const finishOnboarding = async (goal: string) => {
+    await AsyncStorage.setItem('ugood_user_goal', goal);
+    await AsyncStorage.setItem('ai_onboarding_complete', 'true');
+    router.replace('/journal/new');
+  };
+
   // ── RENDER ──
-
-  // Phase 1: Cinematic Story
-  if (phase === 'story') {
-    return (
-      <View style={styles.container}>
-        <View style={styles.centerContent}>
-          <Animated.Text
-            style={[
-              styles.storyText,
-              storyIndex === STORY_LINES.length - 1 && styles.storyTextBrand,
-              {
-                opacity: fadeAnim,
-                transform: [{ translateY: slideAnim }],
-              },
-            ]}
-          >
-            {STORY_LINES[storyIndex]}
-          </Animated.Text>
-        </View>
-
-        {/* Subtle dot indicators */}
-        <View style={styles.dotsContainer}>
-          {STORY_LINES.map((_, i) => (
-            <View
-              key={i}
-              style={[styles.dot, i === storyIndex && styles.dotActive]}
-            />
-          ))}
-        </View>
-      </View>
-    );
-  }
-
-  // Phase 2: Interactive Quiz
-  if (phase === 'quiz') {
-    const currentQ = QUIZ[quizIndex];
-    return (
-      <View style={styles.container}>
-        <Animated.View style={[styles.quizContainer, { opacity: quizFade }]}>
-          {/* Quiz progress */}
-          <Text style={styles.quizStep}>
-            {quizIndex + 1} of {QUIZ.length}
-          </Text>
-
-          <Text style={styles.quizQuestion}>{currentQ.question}</Text>
-
-          <View style={styles.optionsGrid}>
-            {currentQ.options.map((option, i) => (
-              <TouchableOpacity
-                key={i}
-                style={[styles.optionCard, { backgroundColor: getOptionColor(i) }]}
-                activeOpacity={0.7}
-                onPress={() => handleQuizAnswer(option)}
-              >
-                <Text style={styles.optionText}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Animated.View>
-      </View>
-    );
-  }
-
-  // Phase 3: Trust + Progress
   return (
-    <View style={styles.container}>
-      <Animated.View style={[styles.trustContainer, { opacity: trustFade }]}>
-        {/* Shield icon */}
-        <View style={styles.shieldIcon}>
-          <Ionicons name="shield-checkmark-outline" size={36} color={colors.light.accent} />
-        </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
+      {/* Top Icon Area — Book or Lock */}
+      <View style={styles.iconArea}>
+        {/* Book (AppLogo) — visible until spin completes */}
+        {!showLockIcon && (
+          <AppLogo scale={0.6} animate={true} />
+        )}
+        {showLockIcon && (
+          <View style={styles.spinContainer}>
+            {/* Book side (spinning away) */}
+            <Animated.View style={[styles.spinFace, {
+              opacity: bookOpacity,
+              transform: [{ perspective: 800 }, { rotateY: bookRotate }]
+            }]}>
+              <AppLogo scale={0.6} animate={false} />
+            </Animated.View>
 
-        <Text style={styles.trustTitle}>Your space. Only yours.</Text>
-
-        <Text style={styles.trustBody}>
-          UGood runs a private AI entirely on your phone. Your entries never leave your device. Not to train models, not to improve algorithms. Everything stays between you and your journal.
-        </Text>
-
-        {/* Progress */}
-        <View style={styles.progressContainer}>
-          <View style={styles.progressTrack}>
-            <View style={[styles.progressFill, { width: `${Math.min(100, progress * 100)}%` }]} />
+            {/* Lock side (spinning in) */}
+            <Animated.View style={[styles.spinFace, styles.spinFaceBack, {
+              opacity: lockOpacity,
+              transform: [{ perspective: 800 }, { rotateY: lockRotate }, { scale: lockScaleAnim }]
+            }]}>
+              <View style={styles.lockIconCircle}>
+                <Ionicons
+                  name={isLocked ? "lock-closed" : "lock-open-outline"}
+                  size={52}
+                  color={colors.light.primary}
+                />
+              </View>
+            </Animated.View>
           </View>
-          <Text style={styles.progressLabel}>
-            {downloadReady ? 'Your private AI is ready.' : `Setting up your private AI... ${Math.round(progress * 100)}%`}
-          </Text>
-        </View>
+        )}
+      </View>
 
-        {/* CTA Button */}
-        <Animated.View style={{ transform: [{ scale: buttonScale }], width: '100%' }}>
-          <TouchableOpacity
-            style={[styles.ctaButton, downloadReady ? styles.ctaReady : styles.ctaDisabled]}
-            activeOpacity={0.8}
-            disabled={!downloadReady}
-            onPress={handleEnter}
-          >
-            <Text style={[styles.ctaText, downloadReady ? styles.ctaTextReady : styles.ctaTextDisabled]}>
-              Write Your First Entry
-            </Text>
-          </TouchableOpacity>
-        </Animated.View>
-      </Animated.View>
-    </View>
+      {/* Content Area */}
+      <ScrollView
+        style={styles.contentScroll}
+        contentContainerStyle={styles.contentContainer}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* ── Facts Phase ── */}
+        {phase === 'facts' && (
+          <View style={styles.factsWrapper}>
+            <Animated.Text style={[styles.factText, { opacity: fadeAnim }]}>
+              {FACTS[factIndex]}
+            </Animated.Text>
+            <PulsingDots />
+          </View>
+        )}
+
+        {/* ── Auth Name Phase ── */}
+        {phase === 'auth-name' && (
+          <Animated.View style={[styles.authContainer, { opacity: authNameFadeAnim }]}>
+            <Text style={styles.authTitle}>What should we call you?</Text>
+
+            <View style={styles.formContainer}>
+              <TextInput
+                style={styles.authInput}
+                placeholder="Your Name"
+                placeholderTextColor="rgba(61,61,61,0.35)"
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+                autoFocus
+              />
+              <TouchableOpacity
+                style={[styles.authButton, !name.trim() && styles.authButtonDisabled]}
+                onPress={handleNameContinue}
+                disabled={!name.trim()}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.authButtonText}>Continue</Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        )}
+
+        {/* ── Auth Secure Phase ── */}
+        {phase === 'auth-secure' && (
+          <Animated.View style={[styles.authContainer, styles.authContainerSecure, { opacity: authSecureFadeAnim }]}>
+            <Text style={[styles.authTitle, styles.authTitleSecure]}>Let's keep your thoughts safe.</Text>
+
+            <View style={styles.formContainer}>
+              <TextInput
+                style={styles.authInput}
+                placeholder="Email Address"
+                placeholderTextColor="rgba(61,61,61,0.35)"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+                autoFocus
+              />
+              <TextInput
+                style={styles.authInput}
+                placeholder="Password"
+                placeholderTextColor="rgba(61,61,61,0.35)"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+
+              <TouchableOpacity
+                style={[styles.authButton, authLoading && styles.authButtonDisabled]}
+                onPress={handleAuthSubmit}
+                disabled={authLoading || isLocked}
+                activeOpacity={0.8}
+              >
+                {authLoading ? (
+                  <ActivityIndicator color={colors.light.background} />
+                ) : (
+                  <Text style={styles.authButtonText}>
+                    {isSignUp ? "Secure Journals" : "Unlock Journals"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => setIsSignUp(!isSignUp)}
+                style={styles.toggleButton}
+                disabled={authLoading || isLocked}
+              >
+                <Text style={styles.toggleText}>
+                  {isSignUp ? "Already have an account?" : "Need to create an account?"}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Animated.View>
+        )}
+
+        {/* ── Why Phase ── */}
+        {phase === 'why' && (
+          <Animated.View style={[styles.whyContainer, { opacity: whyFadeAnim }]}>
+            <Text style={styles.whyTitle}>What are you looking for?</Text>
+
+            <View style={styles.optionsContainer}>
+              {WHY_OPTIONS.map((option, idx) => (
+                <TouchableOpacity
+                  key={idx}
+                  style={[
+                    styles.optionButton,
+                    selectedWhy === option && styles.optionButtonActive,
+                    option === "Other" && showCustomInput && { display: 'none' }
+                  ]}
+                  activeOpacity={0.7}
+                  onPress={() => handleSelectWhy(option)}
+                >
+                  <Text style={[
+                    styles.optionText,
+                    selectedWhy === option && styles.optionTextActive
+                  ]}>
+                    {option}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+
+              {showCustomInput && (
+                <View style={styles.customInputContainer}>
+                  <TextInput
+                    style={styles.customInput}
+                    placeholder="Type your reason..."
+                    placeholderTextColor="rgba(61,61,61,0.4)"
+                    value={customWhy}
+                    onChangeText={setCustomWhy}
+                    autoFocus
+                    maxLength={100}
+                    onSubmitEditing={handleCustomSubmit}
+                    returnKeyType="done"
+                  />
+                  <TouchableOpacity
+                    style={[styles.submitButton, !customWhy.trim() && styles.submitButtonDisabled]}
+                    onPress={handleCustomSubmit}
+                    disabled={!customWhy.trim()}
+                  >
+                    <Text style={styles.submitButtonText}>Begin</Text>
+                  </TouchableOpacity>
+                </View>
+              )}
+            </View>
+          </Animated.View>
+        )}
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
-}
-
-// Pastel option colors cycling through palette
-function getOptionColor(index: number): string {
-  const palette = [
-    colors.light.pastelMint,
-    colors.light.pastelBlue,
-    colors.light.pastelYellow,
-    colors.light.pastelPurple,
-  ];
-  return palette[index % palette.length];
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.light.background,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 
-  // ── Phase 1: Story ──
-  centerContent: {
-    flex: 1,
+  // ── Top Icon Area ──
+  iconArea: {
+    flex: 0.4,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingBottom: 5,
+    paddingTop: 70,
+  },
+  spinContainer: {
+    width: 200,
+    height: 200,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 40,
   },
-  storyText: {
-    fontSize: 28,
-    fontWeight: '400',
+  spinFace: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  spinFaceBack: {
+    position: 'absolute',
+  },
+  lockIconCircle: {
+    backgroundColor: 'rgba(255,255,255,0.5)',
+    padding: 24,
+    borderRadius: 60,
+  },
+
+  // ── Content Area ──
+  contentScroll: {
+    flex: 0.6,
+  },
+  contentContainer: {
+    paddingHorizontal: 32,
+    alignItems: 'center',
+    paddingBottom: 40,
+  },
+
+  // ── Facts ──
+  factsWrapper: {
+    alignItems: 'center',
+    paddingTop: 80,
+  },
+  factText: {
+    fontSize: 26,
+    lineHeight: 40,
     color: colors.light.text,
     textAlign: 'center',
-    lineHeight: 40,
+    fontWeight: '400',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    letterSpacing: 0.3,
+    marginTop: 10,
   },
-  storyTextBrand: {
-    fontSize: 32,
-    fontWeight: '700',
-    lineHeight: 44,
-  },
+
+  // ── Pulsing Dots ──
   dotsContainer: {
     flexDirection: 'row',
     gap: 8,
-    paddingBottom: 60,
+    marginTop: 40,
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'rgba(61,61,61,0.15)',
-  },
-  dotActive: {
-    backgroundColor: colors.light.accent,
-    width: 20,
-    borderRadius: 3,
+    backgroundColor: 'rgba(61,61,61,0.4)',
   },
 
-  // ── Phase 2: Quiz ──
-  quizContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
+  // ── Auth Shared ──
+  authContainer: {
     width: '100%',
+    alignItems: 'center',
+    paddingTop: 10,
   },
-  quizStep: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: 'rgba(61,61,61,0.4)',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    textAlign: 'center',
-    marginBottom: 16,
+  authContainerSecure: {
+    paddingTop: 0,
   },
-  quizQuestion: {
-    fontSize: 28,
+  authTitle: {
+    fontSize: 24,
     fontWeight: '600',
     color: colors.light.text,
     textAlign: 'center',
-    marginBottom: 40,
-    lineHeight: 38,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    marginBottom: 24,
   },
-  optionsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    justifyContent: 'center',
+  authTitleSecure: {
+    marginBottom: 8,
   },
-  optionCard: {
-    width: (width - 76) / 2,
-    paddingVertical: 20,
-    paddingHorizontal: 16,
-    borderRadius: borderRadius.xxl,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  optionText: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: colors.light.text,
-    textAlign: 'center',
-  },
-
-  // ── Phase 3: Trust ──
-  trustContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 32,
+  formContainer: {
     width: '100%',
-    alignItems: 'center',
+    gap: 10,
   },
-  shieldIcon: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: 'rgba(184,161,209,0.15)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 32,
-  },
-  trustTitle: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: colors.light.text,
-    textAlign: 'center',
-    marginBottom: 20,
-    lineHeight: 36,
-  },
-  trustBody: {
+  authInput: {
+    backgroundColor: 'rgba(255,255,255,0.6)',
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+    paddingHorizontal: 20,
+    paddingVertical: 16,
     fontSize: 16,
-    lineHeight: 26,
-    color: 'rgba(61,61,61,0.65)',
-    textAlign: 'center',
-    marginBottom: 48,
+    color: colors.light.text,
   },
-  progressContainer: {
-    width: '100%',
-    marginBottom: 32,
+  authButton: {
+    backgroundColor: colors.light.text,
+    borderRadius: borderRadius.xl,
+    paddingVertical: 18,
+    alignItems: 'center',
+    marginTop: 8,
+    ...shadows.md,
   },
-  progressTrack: {
-    height: 4,
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: 2,
-    overflow: 'hidden',
-    marginBottom: 12,
+  authButtonDisabled: {
+    backgroundColor: 'rgba(61,61,61,0.15)',
+    shadowOpacity: 0,
+    elevation: 0,
   },
-  progressFill: {
-    height: '100%',
-    backgroundColor: colors.light.accent,
-    borderRadius: 2,
+  authButtonText: {
+    color: colors.light.background,
+    fontSize: 16,
+    fontWeight: '600',
   },
-  progressLabel: {
-    fontSize: 13,
-    color: 'rgba(61,61,61,0.5)',
-    textAlign: 'center',
+  toggleButton: {
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  toggleText: {
+    fontSize: 14,
+    color: colors.light.accent,
     fontWeight: '500',
   },
-  ctaButton: {
+
+  // ── Why Phase ──
+  whyContainer: {
+    width: '100%',
+    alignItems: 'center',
+  },
+  whyTitle: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: colors.light.text,
+    marginBottom: 32,
+    textAlign: 'center',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  optionsContainer: {
+    width: '100%',
+    gap: 12,
+  },
+  optionButton: {
     width: '100%',
     paddingVertical: 18,
+    paddingHorizontal: 20,
+    backgroundColor: 'rgba(255,255,255,0.6)',
     borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
     alignItems: 'center',
-    justifyContent: 'center',
   },
-  ctaReady: {
-    backgroundColor: colors.light.text,
-    shadowColor: '#3D3D3D',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+  optionButtonActive: {
+    backgroundColor: colors.light.primary,
+    borderColor: 'rgba(37,99,235,0.1)',
   },
-  ctaDisabled: {
-    backgroundColor: 'rgba(0,0,0,0.05)',
+  optionText: {
+    fontSize: 16,
+    color: 'rgba(61,61,61,0.8)',
+    fontWeight: '500',
   },
-  ctaText: {
-    fontSize: 17,
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  ctaTextReady: {
+  optionTextActive: {
     color: colors.light.background,
+    fontWeight: '600',
   },
-  ctaTextDisabled: {
-    color: 'rgba(61,61,61,0.3)',
+
+  // ── Custom Input ──
+  customInputContainer: {
+    width: '100%',
+    marginTop: 4,
+  },
+  customInput: {
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    borderRadius: borderRadius.xl,
+    borderWidth: 1,
+    borderColor: colors.light.primary,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+    fontSize: 16,
+    color: colors.light.text,
+    marginBottom: 12,
+  },
+  submitButton: {
+    backgroundColor: colors.light.primary,
+    borderRadius: borderRadius.xl,
+    paddingVertical: 18,
+    alignItems: 'center',
+    ...shadows.md,
+  },
+  submitButtonDisabled: {
+    backgroundColor: 'rgba(61,61,61,0.1)',
+    shadowOpacity: 0,
+  },
+  submitButtonText: {
+    color: colors.light.background,
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

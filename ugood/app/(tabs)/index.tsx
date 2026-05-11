@@ -60,15 +60,7 @@ const defaultForYouCards = [
   },
 ];
 
-const getTopicStyle = (topic: string) => {
-  switch (topic) {
-    case 'stress': return { bg: colors.light.pastelMint, iconColor: '#16A34A', actionColor: 'rgba(21,128,61,0.7)', icon: 'leaf-outline' as const };
-    case 'growth': return { bg: colors.light.pastelYellow, iconColor: '#CA8A04', actionColor: 'rgba(161,98,7,0.7)', icon: 'sunny-outline' as const };
-    case 'reflection': return { bg: colors.light.pastelBlue, iconColor: '#2563EB', actionColor: 'rgba(37,99,235,0.7)', icon: 'water-outline' as const };
-    case 'energy': return { bg: colors.light.pastelOrange, iconColor: '#EA580C', actionColor: 'rgba(234,88,12,0.7)', icon: 'flash-outline' as const };
-    default: return { bg: colors.light.pastelMint, iconColor: '#16A34A', actionColor: 'rgba(21,128,61,0.7)', icon: 'checkmark-circle-outline' as const };
-  }
-};
+// We only use standard neutrals now for most cards for a peaceful UI
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -167,40 +159,58 @@ export default function HomeScreen() {
       cards.push({
         title: 'Start a Streak',
         action: 'Check in now',
-        bg: colors.light.pastelBlue,
-        iconColor: '#2563EB',
-        actionColor: 'rgba(37,99,235,0.7)',
+        bg: 'rgba(61,61,61,0.05)',
+        iconColor: 'rgba(61,61,61,0.6)',
+        actionColor: 'rgba(61,61,61,0.8)',
         icon: 'calendar-outline' as const,
         onPress: () => router.push('/journal/emotions'),
       });
     }
 
-    // Card 2: Primary Mood Focus (based on last 5 entries)
+    // Card 2: Primary Mood Focus (Requires 3/5 threshold)
     if (entries.length > 0) {
       const recentMoods = entries.slice(0, 5).map(e => (e.mood || '').split(',')[0].toLowerCase().trim());
       const counts: Record<string, number> = {};
       recentMoods.forEach(m => { if (m) counts[m] = (counts[m] || 0) + 1; });
-      const dominantMood = Object.entries(counts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Reflecting';
-      const negativeMoods = ['sad', 'anxious', 'annoyed', 'angry', 'stress', 'fearful', 'tired', 'depressed', 'bored'];
-      const isNegative = negativeMoods.some(m => dominantMood.toLowerCase().includes(m));
-      const titlePrefix = isNegative ? 'Navigating' : 'Harnessing';
+      const sortedMoods = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+      
+      if (sortedMoods.length > 0 && sortedMoods[0][1] >= 3) {
+        const dominantMood = sortedMoods[0][0];
+        const negativeMoods = ['sad', 'anxious', 'annoyed', 'angry', 'stress', 'fearful', 'tired', 'depressed', 'bored'];
+        const isNegative = negativeMoods.some(m => dominantMood.toLowerCase().includes(m));
+        const titlePrefix = isNegative ? 'Navigating' : 'Harnessing';
 
-      cards.push({
-        title: `${titlePrefix} feeling ${dominantMood.charAt(0).toUpperCase() + dominantMood.slice(1)}`,
-        action: 'View strategy',
-        ...getTopicStyle(streak % 2 === 0 ? 'growth' : 'reflection'), // Rotation based on a number
-        onPress: () => {
-          setSelectedFocusMood(dominantMood);
-          setShowFocusModal(true);
-        },
-      });
+        cards.push({
+          title: `${titlePrefix} feeling ${dominantMood.charAt(0).toUpperCase() + dominantMood.slice(1)}`,
+          action: 'View strategy',
+          bg: colors.light.pastelBlue,
+          iconColor: '#2563EB',
+          actionColor: 'rgba(37,99,235,0.7)',
+          icon: 'water-outline' as const,
+          onPress: () => {
+            setSelectedFocusMood(dominantMood);
+            setShowFocusModal(true);
+          },
+        });
+      } else {
+        // No strong momentum, just standard check in
+        cards.push({
+          title: 'Daily Reflection',
+          action: 'Write entry',
+          bg: 'rgba(61,61,61,0.05)',
+          iconColor: 'rgba(61,61,61,0.6)',
+          actionColor: 'rgba(61,61,61,0.8)',
+          icon: 'pencil-outline' as const,
+          onPress: () => router.push('/journal/new'),
+        });
+      }
     } else {
       cards.push({
         title: 'Your Past Self',
         action: 'Write entry',
-        bg: colors.light.pastelOrange,
-        iconColor: '#EA580C',
-        actionColor: 'rgba(234,88,12,0.7)',
+        bg: 'rgba(61,61,61,0.05)',
+        iconColor: 'rgba(61,61,61,0.6)',
+        actionColor: 'rgba(61,61,61,0.8)',
         icon: 'pencil-outline' as const,
         onPress: () => router.push('/journal/new'),
       });
@@ -211,7 +221,10 @@ export default function HomeScreen() {
       cards.push({
         title: aiCard.title,
         action: 'View insight',
-        ...getTopicStyle(aiCard.type === 'observation' ? 'reflection' : 'growth'),
+        bg: 'rgba(61,61,61,0.05)',
+        iconColor: 'rgba(61,61,61,0.6)',
+        actionColor: 'rgba(61,61,61,0.8)',
+        icon: (aiCard.type === 'observation' ? 'eye-outline' : 'bulb-outline') as any,
         onPress: () => {
           setSelectedPattern({ title: aiCard.title, analysis: aiCard.content });
           setShowPatternModal(true);

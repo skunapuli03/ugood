@@ -47,7 +47,7 @@ const Particle = ({ delay, size, startX, startY }: {
                 width: size,
                 height: size,
                 borderRadius: size / 2,
-                backgroundColor: 'rgba(184,161,209,0.3)', // Lavender particle
+                backgroundColor: colors.light.pastelMint, // Mint particle
                 opacity,
             }}
         />
@@ -231,7 +231,7 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
                     <Ionicons
                         name="book-outline"
                         size={120}
-                        color="rgba(184,161,209,0.25)"
+                        color={colors.light.primary} // Replaced lavender with primary pastel blue
                         style={styles.bookIcon}
                     />
                     {/* Inner light source */}
@@ -268,7 +268,7 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
                 <Ionicons
                     name="sparkles-outline"
                     size={14}
-                    color="rgba(184,161,209,0.5)"
+                    color="rgba(37,99,235,0.4)" // Soft blue
                 />
                 <View style={styles.footerLine} />
             </Animated.View>
@@ -290,7 +290,7 @@ const styles = StyleSheet.create({
         width: 500,
         height: 500,
         borderRadius: 250,
-        backgroundColor: 'rgba(184,161,209,0.08)', // Lavender bloom
+        backgroundColor: 'rgba(197, 235, 252, 0.15)', // Light blue bloom
     },
     centerComposition: {
         alignItems: 'center',
@@ -307,7 +307,7 @@ const styles = StyleSheet.create({
         width: 280,
         height: 280,
         borderRadius: 140,
-        backgroundColor: 'rgba(184,161,209,0.12)',
+        backgroundColor: 'rgba(226, 247, 225, 0.4)', // Pastel Mint bloom
     },
     iconPaperFrame: {
         position: 'absolute',
@@ -326,7 +326,7 @@ const styles = StyleSheet.create({
         width: 48,
         height: 48,
         borderRadius: 24,
-        backgroundColor: 'rgba(184,161,209,0.3)',
+        backgroundColor: colors.light.pastelYellow, // Cozy yellow light source
     },
     brandContainer: {
         alignItems: 'center',
@@ -337,6 +337,10 @@ const styles = StyleSheet.create({
         fontStyle: 'italic',
         color: colors.light.text, // #3D3D3D charcoal
         letterSpacing: -4,
+        paddingTop: 20,
+        paddingBottom: 10,
+        paddingRight: 30,
+        marginLeft: -10,
         // Playfair Display would be set via fontFamily when loaded
     },
     tagline: {
