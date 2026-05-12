@@ -75,7 +75,7 @@ export default function OnboardingScreen() {
   const { session, setSession, setUser } = useUserStore();
 
   // ── State ──
-  const [phase, setPhase] = useState<'facts' | 'auth-name' | 'auth-secure' | 'why'>('facts');
+  const [phase, setPhase] = useState<'facts' | 'auth-name' | 'auth-secure' | 'why' | 'kickoff'>('facts');
   const [factIndex, setFactIndex] = useState(0);
   const [downloadReady, setDownloadReady] = useState(false);
 
@@ -98,6 +98,7 @@ export default function OnboardingScreen() {
   const authSecureFadeAnim = useRef(new Animated.Value(0)).current;
   const lockScaleAnim = useRef(new Animated.Value(1)).current;
   const whyFadeAnim = useRef(new Animated.Value(0)).current;
+  const kickoffFadeAnim = useRef(new Animated.Value(0)).current;
 
   // Book-to-Lock spin animation
   const spinAnim = useRef(new Animated.Value(0)).current;
@@ -302,6 +303,17 @@ export default function OnboardingScreen() {
     }
   }, [phase]);
 
+  // ── Kickoff Phase Entrance ──
+  useEffect(() => {
+    if (phase === 'kickoff') {
+      Animated.timing(kickoffFadeAnim, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [phase]);
+
   const handleSelectWhy = (option: string) => {
     if (option === "Other") {
       setShowCustomInput(true);
@@ -309,17 +321,28 @@ export default function OnboardingScreen() {
     } else {
       setSelectedWhy(option);
       setShowCustomInput(false);
-      finishOnboarding(option);
+      transitionToKickoff();
     }
   };
 
   const handleCustomSubmit = () => {
     if (customWhy.trim()) {
-      finishOnboarding(customWhy.trim());
+      transitionToKickoff();
     }
   };
 
-  const finishOnboarding = async (goal: string) => {
+  const transitionToKickoff = () => {
+    Animated.timing(whyFadeAnim, {
+      toValue: 0,
+      duration: 600,
+      useNativeDriver: true,
+    }).start(() => {
+      setPhase('kickoff');
+    });
+  };
+
+  const finishOnboarding = async () => {
+    const goal = customWhy.trim() || selectedWhy || 'Journaling';
     await AsyncStorage.setItem('ugood_user_goal', goal);
     await AsyncStorage.setItem('ai_onboarding_complete', 'true');
     router.replace('/journal/new');
@@ -508,6 +531,26 @@ export default function OnboardingScreen() {
                   </TouchableOpacity>
                 </View>
               )}
+            </View>
+          </Animated.View>
+        )}
+
+        {/* ── Kickoff Phase ── */}
+        {phase === 'kickoff' && (
+          <Animated.View style={[styles.kickoffContainer, { opacity: kickoffFadeAnim }]}>
+            <View style={styles.kickoffContent}>
+              <Text style={styles.kickoffTitle}>You're all set, {name || 'there'}.</Text>
+              <Text style={styles.kickoffSubtitle}>
+                Let’s capture your first thought to kick things off.
+              </Text>
+              
+              <TouchableOpacity
+                style={styles.authButton}
+                onPress={finishOnboarding}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.authButtonText}>Begin My First Entry</Text>
+              </TouchableOpacity>
             </View>
           </Animated.View>
         )}
@@ -722,5 +765,32 @@ const styles = StyleSheet.create({
     color: colors.light.background,
     fontSize: 16,
     fontWeight: '600',
+  },
+
+  // ── Kickoff ──
+  kickoffContainer: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 40,
+  },
+  kickoffContent: {
+    width: '100%',
+    alignItems: 'center',
+    gap: 24,
+  },
+  kickoffTitle: {
+    fontSize: 32,
+    fontWeight: '700',
+    color: colors.light.text,
+    textAlign: 'center',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+  },
+  kickoffSubtitle: {
+    fontSize: 18,
+    color: 'rgba(61,61,61,0.6)',
+    textAlign: 'center',
+    lineHeight: 28,
+    marginBottom: 20,
+    paddingHorizontal: 10,
   },
 });

@@ -2,6 +2,7 @@ import { Redirect } from 'expo-router';
 import { useUserStore } from '../store/userStore';
 import { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { isModelDownloaded } from '../services/localLLM';
 
 export default function Index() {
   const { session, loading: authLoading } = useUserStore();
@@ -11,7 +12,10 @@ export default function Index() {
     const checkOnboarding = async () => {
       try {
         const flag = await AsyncStorage.getItem('ai_onboarding_complete');
-        if (flag !== 'true') {
+        const modelPresent = await isModelDownloaded();
+        
+        // If flag is missing OR model is missing, we treat as fresh install
+        if (flag !== 'true' || !modelPresent) {
           setOnboardingStatus('needs_onboarding');
         } else {
           setOnboardingStatus('complete');

@@ -6,6 +6,7 @@ import {
     Animated,
     Dimensions,
     Easing,
+    Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../utils/theme';
@@ -101,12 +102,12 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
                 }),
             ]).start();
 
-            // Phase 2: Book icon materializes (400ms)
+            // Phase 2: Book icon materializes (200ms)
             setTimeout(() => {
                 Animated.parallel([
                     Animated.timing(iconOpacity, {
                         toValue: 1,
-                        duration: 800,
+                        duration: 600,
                         useNativeDriver: true,
                     }),
                     Animated.spring(iconScale, {
@@ -116,9 +117,9 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
                         useNativeDriver: true,
                     }),
                 ]).start();
-            }, 400);
+            }, 200);
 
-            // Phase 3: Title "Yu" fades in (800ms)
+            // Phase 3: Title "UGood" fades in (500ms)
             setTimeout(() => {
                 Animated.parallel([
                     Animated.timing(titleOpacity, {
@@ -133,9 +134,9 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
                         useNativeDriver: true,
                     }),
                 ]).start();
-            }, 800);
+            }, 500);
 
-            // Phase 4: Tagline + footer (1200ms)
+            // Phase 4: Tagline + footer (800ms)
             setTimeout(() => {
                 Animated.parallel([
                     Animated.timing(taglineOpacity, {
@@ -149,7 +150,7 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
                         useNativeDriver: true,
                     }),
                 ]).start();
-            }, 1200);
+            }, 800);
 
             // Start breathing pulse
             setTimeout(() => {
@@ -334,14 +335,11 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 72,
         fontWeight: '500',
-        fontStyle: 'italic',
-        color: colors.light.text, // #3D3D3D charcoal
-        letterSpacing: -4,
-        paddingTop: 20,
-        paddingBottom: 10,
-        paddingRight: 30,
-        marginLeft: -10,
-        // Playfair Display would be set via fontFamily when loaded
+        fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+        color: colors.light.text, // Wellness Charcoal
+        letterSpacing: -2,
+        paddingHorizontal: 20,
+        paddingTop: 10,
     },
     tagline: {
         marginTop: 16,

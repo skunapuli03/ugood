@@ -31,9 +31,22 @@ export default function NewEntryScreen() {
   const emotions: string[] = emotionsRaw ? JSON.parse(emotionsRaw) : [];
   const isGuidedFlow = emotions.length > 0;
 
+  const navigateBack = () => {
+    try {
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace('/(tabs)');
+      }
+    } catch (e) {
+      // Fallback for safety
+      router.replace('/(tabs)');
+    }
+  };
+
   const handleDone = async () => {
     if (!content.trim() || !user) {
-      router.back();
+      navigateBack();
       return;
     }
 
@@ -52,7 +65,7 @@ export default function NewEntryScreen() {
       // If we came from Home -> Emotions -> New, pop back twice to Home
       router.dismissAll(); 
     } else {
-      router.back();
+      navigateBack();
     }
   };
 
@@ -74,7 +87,7 @@ export default function NewEntryScreen() {
 
         <View style={styles.headerTop}>
           <TouchableOpacity 
-            onPress={() => isGuidedFlow ? router.dismissAll() : router.back()} 
+            onPress={() => isGuidedFlow ? router.dismissAll() : navigateBack()} 
             style={styles.closeButton}
             hitSlop={{ top: 20, bottom: 20, left: 20, right: 20 }}
           >
