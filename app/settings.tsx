@@ -466,9 +466,14 @@ export default function SettingsScreen() {
                 You retain complete ownership over everything you write. You can export your full archive at any time to CSV or Markdown, or purge your account and database records permanently with one click.
               </Text>
 
-              <Text style={styles.privacySectionTitle}>4. Local Security</Text>
+              <Text style={styles.privacySectionTitle}>4. Secure Storage & Encryption</Text>
               <Text style={styles.privacyText}>
-                Your settings allow you to lock entry views behind Face ID and blur entry previews in public spaces.
+                Your reflections are stored in your private encrypted vault via Supabase and are accessible solely through your authenticated account.
+              </Text>
+
+              <Text style={styles.privacySectionTitle}>5. Contact & Inquiries</Text>
+              <Text style={styles.privacyText}>
+                For privacy inquiries, account data questions, or concerns, please contact us directly at sivanapuli01@yahoo.com.
               </Text>
             </ScrollView>
 
