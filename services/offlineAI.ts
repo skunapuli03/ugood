@@ -4,15 +4,25 @@ import { JournalEntry } from '../store/journalStore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const getSystemPrompt = async (): Promise<string> => {
+  let prompt = ADAPTIVE_PAST_SELF_INSTRUCTIONS;
   try {
+    const tone = await AsyncStorage.getItem('ugood_reflection_tone');
+    if (tone === 'gentle') {
+      prompt += `\n\nTONE PREFERENCE (GENTLE & VALIDATING): Speak with warm empathy and gentle validation. Focus on self-compassion, reminding them they are doing their best and validating difficult feelings without pressure.`;
+    } else if (tone === 'direct') {
+      prompt += `\n\nTONE PREFERENCE (DIRECT & ACTION-ORIENTED): Speak with direct clarity and practical focus. Highlight agency, concrete next steps, and personal accountability without fluff.`;
+    } else {
+      prompt += `\n\nTONE PREFERENCE (GROUNDED CLARITY): Speak with quiet, profound wisdom. Cut through overthinking and mental fog with calm, concise clarity.`;
+    }
+
     const goal = await AsyncStorage.getItem('ugood_user_goal');
     if (goal) {
-      return `${ADAPTIVE_PAST_SELF_INSTRUCTIONS}\n\nKeep in mind the user's primary goal is: [${goal}]. Calibrate your reflections to help them achieve this.`;
+      prompt += `\n\nKeep in mind the user's primary goal is: [${goal}]. Calibrate your reflections to help them achieve this.`;
     }
   } catch (e) {
-    console.warn('Failed to load user goal for AI prompt', e);
+    console.warn('Failed to load user goal or tone for AI prompt', e);
   }
-  return ADAPTIVE_PAST_SELF_INSTRUCTIONS;
+  return prompt;
 };
 
 export interface EntryInsights {
@@ -41,14 +51,14 @@ export interface DynamicForYouCard {
 const insightsSchema = {
   type: "object",
   properties: {
-    summary: { type: "string", description: "1-2 sentences summarizing the core theme or struggle in the entry" },
+    summary: { type: "string", description: "1 sentence summarizing the core theme or emotional state in the entry" },
     lessons: {
       type: "array",
       items: { type: "string" },
-      description: "3-4 distinct pieces of honest advice, perspective checks, or wake-up calls from their wiser past self"
+      description: "Exactly ONE single, laser-sharp, grounded sentence from their wiser past self that cuts through the noise and addresses the core dilemma."
     },
-    moodAnalysis: { type: "string", description: "1-2 sentences analyzing their emotional state and pattern alignment" },
-    reflectionPrompt: { type: "string", description: "A single, targeted question for the user to break the cycle or reflect honestly" }
+    moodAnalysis: { type: "string", description: "1 sentence analyzing their emotional state" },
+    reflectionPrompt: { type: "string", description: "A single, targeted question for the user to reflect honestly" }
   },
   required: ["summary", "lessons", "moodAnalysis", "reflectionPrompt"]
 };
@@ -80,11 +90,12 @@ export const generateInsights = async (
 
     const systemPrompt = await getSystemPrompt();
 
-    const prompt = `Analyze this journal entry and determine the right tone mode (Self-Sabotage/Tough Love, Genuine Grief/Solidarity, Self-Blame/Perspective, or Growth/Reinforcement).
+    const prompt = `Read this journal entry and deliver a brief, specific lesson (2 to 3 sentences) from their wiser past self.
+Directly address the specific details, dilemma, or feeling described in their entry. Avoid generic one-liners, fortune-cookie cliches, or abstract platitudes. Make it grounded, brief, and specific to what they experienced.
 
 Current Entry: "${safeEntryContent}"
 Mood: ${mood}
-${hasPastContext ? `Past entries (for pattern detection):\n${contextStr}` : ''}`;
+${hasPastContext ? `Past entries (for pattern context):\n${contextStr}` : ''}`;
 
     const response = await callGemini(prompt, { 
       systemInstruction: systemPrompt,
@@ -96,12 +107,10 @@ ${hasPastContext ? `Past entries (for pattern detection):\n${contextStr}` : ''}`
     return {
       summary: 'Your thoughts have been securely recorded.',
       lessons: [
-        'Notice the patterns that lead to moments like this.',
-        'Give yourself space to process before reacting.',
-        'Action creates clarity where overthinking creates doubt.'
+        'Notice what is taking your energy right now, and let go of what was never yours to carry.'
       ],
-      moodAnalysis: `You entered this reflection feeling ${mood}. Take a moment to check in with yourself.`,
-      reflectionPrompt: 'What is one small choice you can make today to support your future self?'
+      moodAnalysis: `You entered this reflection feeling ${mood}.`,
+      reflectionPrompt: 'What is one choice you can make right now to support yourself today?'
     };
   }
 };
@@ -279,10 +288,24 @@ export const generateMoodStrategy = async (mood: string, entries: JournalEntry[]
 Recent context:
 ${recentContext}
 
-Give ONE clear, direct realization (under 2 sentences) on how to handle this state without falling into past traps. Address them as 'You'.`;
+Give ONE clear, direct realization (under 2 sentences) on how to handle this state without falling into past traps. Address them as 'You'. Output plain text only, no JSON formatting.`;
 
     const response = await callGemini(prompt, { systemInstruction: systemPrompt });
-    return response.trim() || `Remember you have navigated feeling ${mood} before. Take a breath and focus on what is right in front of you.`;
+    let text = response.trim();
+
+    // If Gemini still returned JSON, extract the text value
+    if (text.startsWith('{')) {
+      try {
+        const parsed = JSON.parse(text);
+        text = parsed.realization || parsed.strategy || parsed.tip || parsed.insight || parsed.message || Object.values(parsed)[0] || text;
+      } catch {}
+    }
+
+    if (typeof text === 'string') {
+      text = text.replace(/^["']|["']$/g, '').trim();
+    }
+
+    return text || `Remember you have navigated feeling ${mood} before. Take a breath and focus on what is right in front of you.`;
   } catch (e) {
     return `As you navigate being ${mood}, focus on the one small thing you can control right now.`;
   }

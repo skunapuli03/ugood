@@ -23,15 +23,8 @@ export default function RootLayout() {
     initialize();
     BackgroundService.register();
 
-    // 2. AppState Listener for "Everytime" launch experience
+    // 2. AppState Listener - only log state changes, do not re-overlay splash on active
     const subscription = AppState.addEventListener("change", (nextAppState: AppStateStatus) => {
-      // If returning to active from background, show splash
-      if (
-        appState.current.match(/inactive|background/) &&
-        nextAppState === "active"
-      ) {
-        setShowGlobalSplash(true);
-      }
       appState.current = nextAppState;
     });
 
@@ -124,7 +117,11 @@ export default function RootLayout() {
 
 const styles = StyleSheet.create({
   splashOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     zIndex: 9999,
     backgroundColor: colors.light.background,
   },

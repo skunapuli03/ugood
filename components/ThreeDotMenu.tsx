@@ -46,7 +46,7 @@ export default function ThreeDotMenu({
               style={styles.menuItem}
               onPress={() => handleAction(onViewLesson)}
             >
-              <Ionicons name="bulb-outline" size={20} color={colors.light.text} />
+              <Ionicons name="bulb-outline" size={20} color={colors.light.accent} />
               <Text style={styles.menuItemText}>View Lesson</Text>
             </TouchableOpacity>
 

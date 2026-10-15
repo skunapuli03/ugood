@@ -6,8 +6,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   ScrollView,
-  Animated,
-  Easing,
+  Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -15,42 +14,23 @@ import { Ionicons } from '@expo/vector-icons';
 import { getEntryInsights, processEntryWithAI } from '../../../services/aiProcessor';
 import { useJournalStore } from '../../../store/journalStore';
 import { supabase } from '../../../services/supabase';
-import { colors, borderRadius, spacing } from '../../../utils/theme';
+import { colors, borderRadius, spacing, shadows } from '../../../utils/theme';
 import { formatDateTime } from '../../../utils/format';
 
 interface InsightData {
   lessons?: string[];
-  reflection?: string;
+  summary?: string;
   created_at?: string;
 }
 
 export default function LessonViewScreen() {
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
-  const [loading, setLoading] = useState(true);
+
+  const [loadingInitial, setLoadingInitial] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [insight, setInsight] = useState<InsightData | null>(null);
   const [journalDate, setJournalDate] = useState<string | null>(null);
-  const [noInsight, setNoInsight] = useState(false);
-  const spinValue = new Animated.Value(0);
-
-  useEffect(() => {
-    if (loading || generating) {
-      Animated.loop(
-        Animated.timing(spinValue, {
-          toValue: 1,
-          duration: 2000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        })
-      ).start();
-    }
-  }, [loading, generating]);
-
-  const spin = spinValue.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
 
   useEffect(() => {
     loadData();
@@ -70,28 +50,22 @@ export default function LessonViewScreen() {
         setJournalDate(journalData.created_at);
       }
 
-      // 2. Check for existing insights
+      // 2. Check for existing insight
       const data = await getEntryInsights(id as string);
-
-      if (data) {
+      if (data && data.lessons && data.lessons.length > 0) {
         setInsight(data);
-      } else {
-        // No insight exists yet — show the "Let Me Reflect" button
-        setNoInsight(true);
       }
     } catch (err) {
-      console.error('Error loading lesson:', err);
-      setNoInsight(true);
+      console.error('Error loading reflection:', err);
     } finally {
-      setLoading(false);
+      setLoadingInitial(false);
     }
   };
 
-  // P1 Priority Interrupt: Generate lesson immediately
+  // Generate reflection on-demand ONLY when user taps the button
   const handleGenerateNow = async () => {
-    if (!id) return;
+    if (!id || generating) return;
     setGenerating(true);
-    setNoInsight(false);
 
     try {
       let entry = useJournalStore.getState().getEntry(id as string);
@@ -106,7 +80,6 @@ export default function LessonViewScreen() {
 
       if (entry) {
         const pastEntries = useJournalStore.getState().entries;
-        // processEntryWithAI generates + saves to Supabase
         const insights = await processEntryWithAI(
           entry.id,
           `${entry.title || 'Untitled'}\n\n${entry.content}`,
@@ -115,16 +88,15 @@ export default function LessonViewScreen() {
           pastEntries
         );
         setInsight(insights);
-        console.log('[Lesson] P1 interrupt complete. Lesson generated.');
       } else {
         setInsight({
-          lessons: ['Your past self could not find this memory. Please try again later.'],
+          lessons: ['Notice what is draining your energy today, and let go of what was never yours to carry.'],
         });
       }
     } catch (err) {
-      console.error('P1 Generation failed:', err);
+      console.error('On-demand generation failed:', err);
       setInsight({
-        lessons: ['Something went wrong while reflecting. Please try again shortly.'],
+        lessons: ['Take a quiet moment to breathe. Action creates clarity where overthinking creates doubt.'],
       });
     } finally {
       setGenerating(false);
@@ -135,71 +107,22 @@ export default function LessonViewScreen() {
     router.back();
   };
 
-  // ── Loading state ──
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={colors.light.accent} />
-        <Text style={styles.loadingText}>Checking for reflections...</Text>
-      </View>
-    );
-  }
+  // Extract the lesson text
+  const lessonText = insight?.lessons && insight.lessons.length > 0
+    ? insight.lessons[0]
+    : (insight?.summary || null);
 
-  // ── No insight yet: show "Let Me Reflect" button ──
-  if (noInsight && !generating) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.contentContainer}>
-          <View style={styles.iconContainer}>
-            <Ionicons name="hourglass-outline" size={32} color={colors.light.accent} />
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.headerTitle}>Not ready yet</Text>
-            {journalDate && (
-              <Text style={styles.dateLabel}>
-                Written {formatDateTime(journalDate)}
-              </Text>
-            )}
-            <Text style={styles.placeholderText}>
-              Your past self hasn't reflected on this entry yet. Tap below to let them take a moment.
-            </Text>
-
-            <TouchableOpacity
-              style={styles.reflectButton}
-              activeOpacity={0.8}
-              onPress={handleGenerateNow}
-            >
-              <Ionicons name="sparkles-outline" size={18} color={colors.light.background} />
-              <Text style={styles.reflectButtonText}>Let Me Reflect</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // ── Generating state ──
-  if (generating) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Animated.View style={{ transform: [{ rotate: spin }] }}>
-          <Ionicons name="hourglass-outline" size={64} color={colors.light.accent} />
-        </Animated.View>
-        <Text style={styles.loadingText}>Reflecting...</Text>
-        <Text style={styles.loadingSubtext}>Your past self is thinking about this one.</Text>
-      </View>
-    );
-  }
-
-  // ── Insight ready ──
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.contentContainer}>
-        <View style={styles.iconContainer}>
-          <Ionicons name="hourglass-outline" size={32} color={colors.light.primary} />
+        {/* Back / Close button at top */}
+        <View style={styles.topBar}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="close" size={26} color="rgba(61,61,61,0.6)" />
+          </TouchableOpacity>
         </View>
 
+        {/* Main Lesson Card */}
         <View style={styles.card}>
           <Text style={styles.headerTitle}>From Your Past Self</Text>
           {journalDate && (
@@ -208,33 +131,59 @@ export default function LessonViewScreen() {
             </Text>
           )}
 
-          <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-            {insight?.lessons && insight.lessons.length > 0 ? (
-              insight.lessons.map((lesson, index) => (
-                <View key={index} style={styles.lessonContainer}>
-                  <Text style={styles.lessonText}>{lesson}</Text>
-                  {index < (insight.lessons?.length || 0) - 1 && <View style={styles.separator} />}
-                </View>
-              ))
-            ) : (
-              <Text style={styles.lessonText}>Your past self hasn't left a message here yet.</Text>
-            )}
-          </ScrollView>
+          {loadingInitial ? (
+            <View style={styles.inlineLoading}>
+              <ActivityIndicator size="small" color={colors.light.accent} />
+            </View>
+          ) : lessonText ? (
+            /* Brief and specific lesson */
+            <View style={styles.reflectionBody}>
+              <Text style={styles.oneSentenceText}>
+                "{lessonText}"
+              </Text>
+              
+              <View style={styles.signatureLine}>
+                <Text style={styles.signatureText}>— Your Past Self</Text>
+              </View>
+            </View>
+          ) : (
+            /* Not generated yet — clean on-demand trigger */
+            <View style={styles.promptBody}>
+              <Text style={styles.placeholderText}>
+                Take a quiet moment. When you're ready, uncover the lesson waiting in this reflection.
+              </Text>
 
-          <View style={styles.signatureLine}>
-            <Text style={styles.signatureText}>You</Text>
+              <TouchableOpacity
+                style={[styles.reflectButton, generating && styles.reflectButtonDisabled]}
+                activeOpacity={0.85}
+                onPress={handleGenerateNow}
+                disabled={generating}
+              >
+                {generating ? (
+                  <View style={styles.buttonLoadingRow}>
+                    <ActivityIndicator size="small" color={colors.light.background} />
+                    <Text style={styles.reflectButtonText}>Reflecting...</Text>
+                  </View>
+                ) : (
+                  <Text style={styles.reflectButtonText}>View Lesson</Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        {/* Bottom Acknowledgment Action */}
+        {lessonText && (
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={styles.actionButton}
+              onPress={handleAcknowledge}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.actionButtonText}>I hear you</Text>
+            </TouchableOpacity>
           </View>
-        </View>
-
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.actionButton}
-            onPress={handleAcknowledge}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.actionButtonText}>I hear you</Text>
-          </TouchableOpacity>
-        </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -245,107 +194,98 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.light.background,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.light.background,
-  },
-  loadingText: {
-    marginTop: 24,
-    color: colors.light.text,
-    fontSize: 20,
-    fontWeight: '600',
-  },
-  loadingSubtext: {
-    marginTop: 8,
-    color: 'rgba(61,61,61,0.6)',
-    fontSize: 14,
-    textAlign: 'center',
-    paddingHorizontal: 40,
-  },
   contentContainer: {
     flex: 1,
-    padding: spacing.xl,
+    paddingHorizontal: 24,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  topBar: {
+    position: 'absolute',
+    top: 16,
+    left: 20,
+    zIndex: 10,
+  },
+  backButton: {
+    padding: 8,
+  },
   iconContainer: {
-    marginBottom: spacing.lg,
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: 'rgba(61,61,61,0.05)',
+    marginBottom: 20,
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: 'rgba(184, 161, 209, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.05)',
+    borderColor: 'rgba(0,0,0,0.04)',
   },
   card: {
     width: '100%',
-    backgroundColor: 'rgba(61,61,61,0.03)',
+    backgroundColor: 'rgba(255,255,255,0.7)',
     borderRadius: borderRadius.xxl,
-    padding: spacing.xl,
-    paddingBottom: spacing.lg,
+    padding: 32,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: 'rgba(0,0,0,0.05)',
-    maxHeight: '70%',
+    ...shadows.sm,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: '700',
     color: colors.light.text,
-    marginBottom: spacing.xs,
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    marginBottom: 6,
     textAlign: 'center',
   },
   dateLabel: {
-    fontSize: 12,
-    color: 'rgba(61,61,61,0.5)',
-    marginBottom: spacing.xl,
+    fontSize: 11,
+    color: 'rgba(61,61,61,0.45)',
+    marginBottom: 24,
     textTransform: 'uppercase',
-    letterSpacing: 2,
+    letterSpacing: 1.5,
     fontWeight: '600',
   },
-  scrollView: {
-    width: '100%',
-    marginBottom: spacing.lg,
+  inlineLoading: {
+    paddingVertical: 32,
+    alignItems: 'center',
   },
-  lessonText: {
-    fontSize: 18,
-    lineHeight: 28,
+  reflectionBody: {
+    width: '100%',
+    paddingVertical: 12,
+    alignItems: 'center',
+  },
+  oneSentenceText: {
+    fontSize: 21,
+    lineHeight: 34,
     color: colors.light.text,
     textAlign: 'center',
     fontWeight: '400',
-  },
-  lessonContainer: {
-    width: '100%',
-    paddingVertical: spacing.md,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: 'rgba(61,61,61,0.1)',
-    width: '40%',
-    alignSelf: 'center',
-    marginVertical: spacing.xs,
+    fontStyle: 'italic',
+    fontFamily: Platform.OS === 'ios' ? 'Georgia' : 'serif',
+    letterSpacing: 0.2,
   },
   signatureLine: {
     width: '100%',
     alignItems: 'flex-end',
-    marginTop: spacing.sm,
+    marginTop: 20,
   },
   signatureText: {
-    fontSize: 16,
-    color: 'rgba(61,61,61,0.6)',
-    fontWeight: '500',
+    fontSize: 15,
+    color: colors.light.accent,
+    fontWeight: '600',
     fontStyle: 'italic',
   },
+  promptBody: {
+    width: '100%',
+    alignItems: 'center',
+  },
   placeholderText: {
-    fontSize: 16,
-    lineHeight: 26,
-    color: 'rgba(61,61,61,0.6)',
+    fontSize: 15,
+    lineHeight: 24,
+    color: 'rgba(61,61,61,0.65)',
     textAlign: 'center',
-    marginBottom: 32,
+    marginBottom: 28,
   },
   reflectButton: {
     flexDirection: 'row',
@@ -354,36 +294,41 @@ const styles = StyleSheet.create({
     gap: 8,
     backgroundColor: colors.light.text,
     paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 100,
-    shadowColor: '#3D3D3D',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 4,
+    paddingHorizontal: 28,
+    borderRadius: borderRadius.xl,
+    width: '100%',
+    ...shadows.md,
+  },
+  reflectButtonDisabled: {
+    opacity: 0.6,
   },
   reflectButtonText: {
     color: colors.light.background,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
     letterSpacing: 0.3,
   },
+  buttonLoadingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   footer: {
-    position: 'absolute',
-    bottom: 50,
+    marginTop: 32,
     width: '100%',
     alignItems: 'center',
   },
   actionButton: {
     backgroundColor: colors.light.text,
     paddingVertical: 16,
-    paddingHorizontal: 48,
-    borderRadius: 100,
+    paddingHorizontal: 44,
+    borderRadius: borderRadius.xl,
+    ...shadows.sm,
   },
   actionButtonText: {
     color: colors.light.background,
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
-    letterSpacing: 0.5,
+    letterSpacing: 0.4,
   },
 });

@@ -55,9 +55,6 @@ export const BackgroundProcessor = {
             // ── Step 5: Inactivity Check (no LLM) ──
             await this.step5_inactivityCheck(entries);
 
-            // ── Step 6: Pre-generate Lessons (LLM, P3) ──
-            await this.step6_preGenerateLessons(userId, entries);
-
             console.log('[Pipeline] Complete ✅');
         } catch (error: any) {
             console.error('[Pipeline] Error:', error.message);

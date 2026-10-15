@@ -58,7 +58,7 @@ export const gradients = {
   success: ['#34D399', '#10B981'],
   warm: ['#F59E0B', '#D97706'],
   cool: ['#e0f7ff', '#c5ebfc'],
-};
+} as const;
 
 export const spacing = {
   xs: 4,

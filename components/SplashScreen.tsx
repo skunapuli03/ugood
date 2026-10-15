@@ -8,8 +8,9 @@ import {
     Easing,
     Platform,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../utils/theme';
+import { Ionicons } from '@expo/vector-icons';
+import AppLogo from './AppLogo';
 
 const { width, height } = Dimensions.get('window');
 
@@ -216,29 +217,14 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
 
             {/* Central Composition */}
             <View style={styles.centerComposition}>
-                {/* Book Icon Frame */}
                 <Animated.View
-                    style={[
-                        styles.iconFrame,
-                        {
-                            opacity: iconOpacity,
-                            transform: [{ scale: iconScale }],
-                        },
-                    ]}
+                    style={{
+                        opacity: iconOpacity,
+                        transform: [{ scale: iconScale }],
+                        marginBottom: 10,
+                    }}
                 >
-                    {/* Soft bloom behind icon */}
-                    <View style={styles.iconBloom} />
-                    {/* Tilted paper frame */}
-                    <View style={styles.iconPaperFrame} />
-                    {/* Book icon */}
-                    <Ionicons
-                        name="book-outline"
-                        size={120}
-                        color={colors.light.primary} // Replaced lavender with primary pastel blue
-                        style={styles.bookIcon}
-                    />
-                    {/* Inner light source */}
-                    <View style={styles.innerLight} />
+                    <AppLogo scale={0.8} animate={false} />
                 </Animated.View>
 
                 {/* Brand Identity */}
@@ -282,7 +268,11 @@ export default function SplashScreen({ onAnimationComplete }: SplashScreenProps)
 
 const styles = StyleSheet.create({
     container: {
-        ...StyleSheet.absoluteFillObject,
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
         backgroundColor: colors.light.background, // #F5F2EA warm parchment
         zIndex: 9999,
         overflow: 'hidden',

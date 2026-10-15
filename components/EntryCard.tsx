@@ -23,14 +23,25 @@ if (Platform.OS === 'android') {
   }
 }
 
-// Map some common moods to dot colors (fallback to accent)
-const getMoodColor = (mood: string) => {
+// Harmonious palette of the same gentle shade for emotions
+const getMoodPalette = (mood: string) => {
   const m = mood.toLowerCase();
-  if (m.includes('anxious') || m.includes('fearful') || m.includes('sad')) return '#D1E8CF'; // green-ish
-  if (m.includes('happy') || m.includes('content') || m.includes('proud')) return '#FDF1B8'; // yellow
-  if (m.includes('angry') || m.includes('annoyed')) return '#FAD7BD'; // orange
-  if (m.includes('calm') || m.includes('relaxed')) return '#D6E4F0'; // blue
-  return colors.light.accent; // lavender fallback
+  if (m.includes('anxious') || m.includes('fearful') || m.includes('sad')) {
+    return { bg: '#EAF5EA', dot: '#16A34A', text: '#1E3A1E' }; // sage mint
+  }
+  if (m.includes('happy') || m.includes('content') || m.includes('proud') || m.includes('grateful')) {
+    return { bg: '#FEF3C7', dot: '#D97706', text: '#78350F' }; // soft warm amber
+  }
+  if (m.includes('angry') || m.includes('annoyed') || m.includes('guilty')) {
+    return { bg: '#FFEDD5', dot: '#EA580C', text: '#7C2D12' }; // soft peach terracotta
+  }
+  if (m.includes('calm') || m.includes('relaxed')) {
+    return { bg: '#EFF6FF', dot: '#2563EB', text: '#1E3A8A' }; // soft sky blue
+  }
+  if (m.includes('tired') || m.includes('bored') || m.includes('unmotivated')) {
+    return { bg: '#F5F3FF', dot: '#7C3AED', text: '#4C1D95' }; // soft lilac
+  }
+  return { bg: 'rgba(184, 161, 209, 0.15)', dot: colors.light.accent, text: colors.light.text }; // lavender
 };
 
 export interface JournalEntry {
@@ -90,7 +101,7 @@ export default function EntryCard({
   }
 
   const primaryEmotion = rawEmotion;
-  const dotColor = getMoodColor(primaryEmotion);
+  const moodPalette = getMoodPalette(primaryEmotion);
 
   const toggleExpand = async () => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
@@ -137,18 +148,18 @@ export default function EntryCard({
   return (
     <View style={styles.card}>
       <TouchableOpacity
-        onPress={onPress}
-        activeOpacity={0.7}
+        onPress={toggleExpand}
+        activeOpacity={0.8}
       >
         <View style={styles.header}>
           <Text style={styles.date}>{formatDate(entry.created_at)}</Text>
           
           <View style={styles.headerRight}>
-            <View style={styles.moodBadge}>
-              <Text style={styles.moodText}>
+            <View style={[styles.moodBadge, { backgroundColor: moodPalette.bg }]}>
+              <Text style={[styles.moodText, { color: moodPalette.text }]}>
                 {primaryEmotion}
               </Text>
-              <View style={[styles.moodDot, { backgroundColor: dotColor }]} />
+              <View style={[styles.moodDot, { backgroundColor: moodPalette.dot }]} />
             </View>
             <ThreeDotMenu
               onEdit={onEdit}
@@ -171,7 +182,7 @@ export default function EntryCard({
       {isExpanded && (
         <View style={styles.expandedSection}>
           <View style={styles.divider} />
-          <Text style={styles.reflectionLabel}>AI REFLECTION</Text>
+          <Text style={styles.reflectionLabel}>PAST SELF REFLECTION</Text>
           
           {isLoadingInsight ? (
             <ActivityIndicator size="small" color={colors.light.accent} style={{ marginTop: 8 }} />
@@ -185,7 +196,7 @@ export default function EntryCard({
             style={styles.fullLessonBtn}
             onPress={onViewLesson}
           >
-            <Text style={styles.fullLessonText}>Read Full AI Lesson</Text>
+            <Text style={styles.fullLessonText}>View Full Lesson</Text>
             <Ionicons name="arrow-forward" size={14} color={colors.light.accent} />
           </TouchableOpacity>
         </View>

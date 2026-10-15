@@ -126,8 +126,9 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   cancelText: {
-    fontSize: 17,
-    color: colors.light.primary,
+    fontSize: 15,
+    color: 'rgba(61,61,61,0.6)',
+    fontWeight: '500',
   },
   headerTitle: {
     fontSize: 17,
@@ -135,14 +136,18 @@ const styles = StyleSheet.create({
     color: colors.light.text,
   },
   doneButton: {
-    padding: 8,
-    minWidth: 60,
-    alignItems: 'flex-end',
+    backgroundColor: colors.light.text,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    minWidth: 64,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   doneText: {
-    fontSize: 17,
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.light.primary,
+    color: colors.light.background,
   },
   loadingWrapper: {
     flexDirection: 'row',
@@ -150,8 +155,8 @@ const styles = StyleSheet.create({
     gap: 4,
   },
   loadingText: {
-    fontSize: 14,
-    color: colors.light.primary,
+    fontSize: 13,
+    color: colors.light.background,
     fontWeight: '500',
   },
   titleInput: {

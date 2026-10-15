@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { formatCalendarDate, parseISO } from 'date-fns';
+import { formatCalendarDate } from '../utils/format';
 import { colors, gradients, borderRadius, shadows } from '../utils/theme';
 import { JournalEntry } from '../store/journalStore';
 

@@ -6,7 +6,7 @@ import { colors, borderRadius, shadows, gradients } from '../utils/theme';
 interface InsightCardProps {
   title: string;
   content: string;
-  gradient?: string[];
+  gradient?: readonly [string, string, ...string[]];
 }
 
 export default function InsightCard({

@@ -96,8 +96,8 @@ export default function ViewEntryScreen() {
               end={{ x: 1, y: 1 }}
               style={styles.actionGradient}
             >
-              <Ionicons name="bulb" size={20} color={colors.light.background} />
-              <Text style={styles.actionButtonText}>View Lesson</Text>
+              <Ionicons name="sparkles" size={20} color={colors.light.background} />
+              <Text style={styles.actionButtonText}>View Reflection</Text>
             </LinearGradient>
           </TouchableOpacity>
 

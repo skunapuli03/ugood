@@ -54,11 +54,11 @@ export default function TabLayout() {
           }}
           listeners={({ navigation, route }) => ({
             tabPress: (e) => {
-              // If Home tab is already focused, open journal modal
+              // If Home tab is already focused, open the same emotions check-in flow as the top button
               const isFocused = navigation.isFocused();
               if (isFocused) {
                 e.preventDefault();
-                router.push('/journal/new');
+                router.push('/journal/emotions');
               }
               // Otherwise, default behavior: navigate to Home
             },

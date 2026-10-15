@@ -9,7 +9,7 @@ import { colors, gradients } from '../utils/theme';
 interface GradientHeaderProps {
   title: string;
   subtitle?: string;
-  gradient?: string[];
+  gradient?: readonly string[] | string[];
   style?: ViewStyle;
   showBack?: boolean;
   rightElement?: React.ReactNode;
